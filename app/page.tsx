@@ -216,7 +216,7 @@ export default function HomePage() {
               </div>
               <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4">請求シンプル</h3>
               <p className="text-sm sm:text-base text-white/70 leading-relaxed">
-                わかりやすい価格体系で、末尾は「80円」系で統一。隠れた費用なし。解約金なし。安心して使える。
+                基本料は月次、従量分は翌々月合算。明快な料金体系。
               </p>
             </div>
           </div>
