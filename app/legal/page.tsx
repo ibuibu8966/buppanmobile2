@@ -33,7 +33,7 @@ export default function LegalPage() {
 
               <div>
                 <h2 className="text-[#d4af37] font-semibold mb-2 text-lg">電話番号</h2>
-                <p>090-5997-2623（平日10:00-18:00）</p>
+                <p>050-8890-8892（平日10:00-18:00）</p>
               </div>
 
               <div>
