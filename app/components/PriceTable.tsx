@@ -11,20 +11,16 @@ interface PricePlan {
 
 const standardPlans: PricePlan[] = [
   { capacity: '1GB', price: '¥880', notes: '音声＋SMS込み' },
-  { capacity: '3GB', price: '¥1,680', notes: '3日500MBで制御' },
-  { capacity: '7.5GB', price: '¥2,280', notes: '3日1GBで制御' },
-  { capacity: '10GB', price: '¥2,780', notes: '3日1.5GBで制御' },
-  { capacity: '20GB', price: '¥3,580', notes: '3日3GBで制御' },
-  { capacity: '100GB目安', price: '¥4,580', notes: '10GB/3日で制御' },
+  { capacity: '3GB', price: '¥1,380', notes: '3日500MBで制御' },
+  { capacity: '7.5GB', price: '¥2,080', notes: '3日1GBで制御' },
+  { capacity: '10GB', price: '¥2,680', notes: '3日1.5GBで制御' },
 ];
 
 const enterprisePlans: PricePlan[] = [
   { capacity: '1GB', price: '¥780', notes: '音声＋SMS込み' },
-  { capacity: '3GB', price: '¥1,580', notes: '3日500MBで制御' },
-  { capacity: '7.5GB', price: '¥2,180', notes: '3日1GBで制御' },
-  { capacity: '10GB', price: '¥2,680', notes: '3日1.5GBで制御' },
-  { capacity: '20GB', price: '¥3,480', notes: '3日3GBで制御' },
-  { capacity: '100GB目安', price: '¥4,480', notes: '10GB/3日で制御' },
+  { capacity: '3GB', price: '¥1,280', notes: '3日500MBで制御' },
+  { capacity: '7.5GB', price: '¥1,980', notes: '3日1GBで制御' },
+  { capacity: '10GB', price: '¥2,580', notes: '3日1.5GBで制御' },
 ];
 
 export default function PriceTable() {
@@ -98,7 +94,7 @@ export default function PriceTable() {
         </div>
 
         {/* Price Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {currentPlans.map((plan, index) => (
             <div
               key={index}
@@ -108,10 +104,25 @@ export default function PriceTable() {
                 <div className="text-white/60 text-sm font-medium mb-2">
                   {plan.capacity}
                 </div>
-                <div className="text-4xl font-bold mb-2">
-                  <span className="text-[#d4af37]">{plan.price}</span>
-                  <span className="text-white/40 text-lg">/月</span>
-                </div>
+                {activeTab === 'enterprise' ? (
+                  <div className="mb-2">
+                    <div className="text-2xl font-bold text-white/40 line-through mb-1">
+                      {standardPlans[index].price}
+                    </div>
+                    <div className="text-sm text-[#f0d970] font-semibold mb-1">
+                      -100円
+                    </div>
+                    <div className="text-4xl font-bold">
+                      <span className="text-[#d4af37]">{plan.price}</span>
+                      <span className="text-white/40 text-lg">/月</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-4xl font-bold mb-2">
+                    <span className="text-[#d4af37]">{plan.price}</span>
+                    <span className="text-white/40 text-lg">/月</span>
+                  </div>
+                )}
                 <div className="text-white/60 text-sm">{plan.notes}</div>
               </div>
             </div>

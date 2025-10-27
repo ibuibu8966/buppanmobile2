@@ -55,19 +55,13 @@ export default function HomePage() {
             </p>
 
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
-              <Link
-                href="/apply?type=mnp"
-                className="group relative px-10 py-5 bg-gradient-to-r from-[#d4af37] via-[#f0d970] to-[#d4af37] text-black font-bold text-xl rounded-full hover:shadow-2xl hover:shadow-[#d4af37]/50 transition-all duration-300 transform hover:scale-105 w-full sm:w-auto text-center overflow-hidden"
-              >
-                <span className="relative z-10">MNPで申し込む</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-[#f0d970] to-[#d4af37] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </Link>
+            <div className="flex justify-center items-center mb-16">
               <Link
                 href="/apply?type=new"
-                className="group px-10 py-5 bg-black/40 backdrop-blur-md text-white font-bold text-xl rounded-full border-2 border-[#d4af37] hover:bg-[#d4af37]/20 hover:border-[#f0d970] transition-all duration-300 transform hover:scale-105 w-full sm:w-auto text-center shadow-lg shadow-[#d4af37]/20"
+                className="group relative px-12 py-6 bg-gradient-to-r from-[#d4af37] via-[#f0d970] to-[#d4af37] text-black font-bold text-xl rounded-full hover:shadow-2xl hover:shadow-[#d4af37]/50 transition-all duration-300 transform hover:scale-105 w-full sm:w-auto text-center overflow-hidden"
               >
-                新規で申し込む
+                <span className="relative z-10">申し込む</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-[#f0d970] to-[#d4af37] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </Link>
             </div>
 
@@ -283,18 +277,12 @@ export default function HomePage() {
           <p className="text-white/70 text-lg mb-8">
             シンプルな料金、明確なサービス。BUPPAN MOBILEで快適な通信環境を。
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link
-              href="/apply?type=mnp"
-              className="px-8 py-4 bg-gradient-to-r from-[#d4af37] to-[#f0d970] text-black font-bold text-lg rounded-full hover:shadow-2xl hover:shadow-[#d4af37]/50 transition-all duration-300 transform hover:scale-105 w-full sm:w-auto"
-            >
-              MNPで申し込む
-            </Link>
+          <div className="flex justify-center items-center">
             <Link
               href="/apply?type=new"
-              className="px-8 py-4 bg-white/10 backdrop-blur-sm text-white font-bold text-lg rounded-full border-2 border-[#d4af37] hover:bg-[#d4af37]/20 transition-all duration-300 transform hover:scale-105 w-full sm:w-auto"
+              className="px-10 py-5 bg-gradient-to-r from-[#d4af37] to-[#f0d970] text-black font-bold text-lg rounded-full hover:shadow-2xl hover:shadow-[#d4af37]/50 transition-all duration-300 transform hover:scale-105 w-full sm:w-auto"
             >
-              新規で申し込む
+              申し込む
             </Link>
           </div>
         </div>
