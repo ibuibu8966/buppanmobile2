@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Header from '../components/Header';
@@ -9,7 +9,7 @@ import Footer from '../components/Footer';
 type ApplyType = 'new' | 'mnp';
 type Step = 1 | 2 | 3 | 4;
 
-export default function ApplyPage() {
+function ApplyForm() {
   const searchParams = useSearchParams();
   const [applyType, setApplyType] = useState<ApplyType>('new');
   const [currentStep, setCurrentStep] = useState<Step>(1);
@@ -573,5 +573,17 @@ export default function ApplyPage() {
 
       <Footer />
     </div>
+  );
+}
+
+export default function ApplyPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-white">読み込み中...</div>
+      </div>
+    }>
+      <ApplyForm />
+    </Suspense>
   );
 }
