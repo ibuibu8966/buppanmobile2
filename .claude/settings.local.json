@@ -6,7 +6,9 @@
       "Bash(git push:*)",
       "Bash(git commit -m \"$(cat <<''EOF''\n料金プラン変更とUI改善\n\n主な変更内容：\n- 料金プランを4つに変更（1GB: 880円、3GB: 1,380円、7.5GB: 2,080円、10GB: 2,680円）\n- 100回線以上プラン選択時に元の価格に斜線表示 + -100円表示を追加\n- MNPで申し込むボタンを削除し、「申し込む」ボタンのみに統一\n- 料金カードのグリッドを4列表示に変更\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(npm run dev:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(pip install:*)",
+      "Bash(python:*)"
     ],
     "deny": [],
     "ask": []
