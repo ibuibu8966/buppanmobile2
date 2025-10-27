@@ -24,9 +24,10 @@ const enterprisePlans: PricePlan[] = [
 ];
 
 export default function PriceTable() {
-  const [activeTab, setActiveTab] = useState<'standard' | 'enterprise'>('standard');
+  const [activeTab, setActiveTab] = useState<'individual' | 'corporate'>('individual');
+  const [is100Plus, setIs100Plus] = useState(false);
 
-  const currentPlans = activeTab === 'standard' ? standardPlans : enterprisePlans;
+  const currentPlans = (activeTab === 'corporate' && is100Plus) ? enterprisePlans : standardPlans;
 
   return (
     <section id="pricing" className="relative py-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
@@ -54,44 +55,76 @@ export default function PriceTable() {
         </div>
 
         {/* Tab Selector */}
-        <div className="flex justify-center mb-12">
+        <div className="flex justify-center mb-8">
           <div className="inline-flex bg-white/5 backdrop-blur-sm rounded-full p-1 border border-white/10">
             <button
-              onClick={() => setActiveTab('standard')}
+              onClick={() => {
+                setActiveTab('individual');
+                setIs100Plus(false);
+              }}
               className={`px-8 py-3 rounded-full font-semibold transition-all duration-300 ${
-                activeTab === 'standard'
+                activeTab === 'individual'
                   ? 'bg-gradient-to-r from-[#d4af37] to-[#f0d970] text-black shadow-lg shadow-[#d4af37]/30'
                   : 'text-white/60 hover:text-white'
               }`}
             >
-              標準プラン
+              個人
             </button>
             <button
-              onClick={() => setActiveTab('enterprise')}
+              onClick={() => {
+                setActiveTab('corporate');
+                setIs100Plus(false);
+              }}
               className={`px-8 py-3 rounded-full font-semibold transition-all duration-300 ${
-                activeTab === 'enterprise'
+                activeTab === 'corporate'
                   ? 'bg-gradient-to-r from-[#d4af37] to-[#f0d970] text-black shadow-lg shadow-[#d4af37]/30'
                   : 'text-white/60 hover:text-white'
               }`}
             >
-              100回線以上（継続）
+              法人
             </button>
           </div>
         </div>
 
-        {/* Plan Description */}
-        <div className="text-center mb-8">
-          {activeTab === 'enterprise' && (
-            <div className="bg-[#d4af37]/10 border border-[#d4af37]/30 rounded-2xl p-6 max-w-3xl mx-auto">
-              <p className="text-[#d4af37] font-semibold mb-2">
-                100回線以上（継続）専用プラン
-              </p>
-              <p className="text-white/80 text-sm">
-                継続利用＆毎月100回線以上のご契約で、標準価格から税込100円引き（各容量一律）
-              </p>
-            </div>
-          )}
-        </div>
+        {/* 100+ Lines Option for Corporate */}
+        {activeTab === 'corporate' && (
+          <div className="flex justify-center mb-8 px-4">
+            <button
+              onClick={() => setIs100Plus(!is100Plus)}
+              className={`relative px-8 py-5 rounded-2xl font-semibold transition-all duration-300 border-2 max-w-2xl w-full shadow-lg transform hover:scale-[1.02] ${
+                is100Plus
+                  ? 'bg-gradient-to-br from-[#d4af37]/30 to-[#d4af37]/10 border-[#d4af37] shadow-[#d4af37]/20'
+                  : 'bg-white/5 backdrop-blur-sm border-white/20 hover:border-[#d4af37]/50 hover:bg-white/10 shadow-black/20'
+              }`}
+            >
+              <div className="flex items-start gap-4">
+                <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all ${
+                  is100Plus
+                    ? 'bg-[#d4af37] border-[#d4af37]'
+                    : 'bg-white/5 border-white/30'
+                }`}>
+                  {is100Plus && (
+                    <svg className="w-5 h-5 text-black" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                </div>
+                <div className="text-left flex-1">
+                  <p className={`text-lg font-bold mb-1 ${is100Plus ? 'text-[#d4af37]' : 'text-white'}`}>
+                    100回線以上（継続）専用プラン
+                  </p>
+                  <p className={`text-sm leading-relaxed ${is100Plus ? 'text-[#d4af37]/90' : 'text-white/60'}`}>
+                    継続利用＆毎月100回線以上のご契約で、標準価格から税込100円引き（各容量一律）
+                  </p>
+                </div>
+              </div>
+              {/* Hover indicator */}
+              {!is100Plus && (
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-[#d4af37]/0 via-[#d4af37]/5 to-[#d4af37]/0 opacity-0 hover:opacity-100 transition-opacity pointer-events-none"></div>
+              )}
+            </button>
+          </div>
+        )}
 
         {/* Price Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
@@ -104,7 +137,7 @@ export default function PriceTable() {
                 <div className="text-white/60 text-sm font-medium mb-2">
                   {plan.capacity}
                 </div>
-                {activeTab === 'enterprise' ? (
+                {is100Plus ? (
                   <div className="mb-2">
                     <div className="text-2xl font-bold text-white/40 line-through mb-1">
                       {standardPlans[index].price}
