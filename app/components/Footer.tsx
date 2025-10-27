@@ -7,20 +7,20 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           {/* Brand */}
           <div className="col-span-1 md:col-span-2">
-            <div className="text-2xl font-bold mb-4">
+            <div className="text-xl sm:text-2xl font-bold mb-4">
               <span className="text-white">BUPPAN</span>
-              <span className="text-[#d4af37] ml-2">MOBILE</span>
+              <span className="text-[#d4af37] ml-1 sm:ml-2">MOBILE</span>
             </div>
-            <p className="text-white/60 text-sm leading-relaxed">
+            <p className="text-white/60 text-xs sm:text-sm leading-relaxed">
               仕入れの相棒。音声込みで&quot;使うぶんだけ&quot;に最適化。
               <br />
               1GB/月880円・音声＋SMS込み。
             </p>
-            <div className="mt-4 text-white/60 text-sm">
+            <div className="mt-4 text-white/60 text-xs sm:text-sm">
               <p>合同会社ピーチ（BUPPAN MOBILE運営）</p>
               <p className="mt-2">〒290-0242</p>
               <p>千葉県市原市荻作530-4</p>
-              <p className="mt-2">
+              <p className="mt-2 break-words">
                 サポート:{' '}
                 <a
                   href="mailto:peach.2023.7.19@gmail.com"

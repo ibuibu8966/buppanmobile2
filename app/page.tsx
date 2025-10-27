@@ -28,29 +28,30 @@ export default function HomePage() {
         <div className="container mx-auto max-w-7xl relative z-10">
           <div className="text-center">
             {/* 装飾的な上部ライン */}
-            <div className="flex items-center justify-center mb-8">
-              <div className="h-px w-16 bg-gradient-to-r from-transparent to-[#d4af37]"></div>
-              <div className="mx-4 text-[#d4af37] text-sm font-semibold tracking-widest uppercase">Premium MVNO Service</div>
-              <div className="h-px w-16 bg-gradient-to-l from-transparent to-[#d4af37]"></div>
+            <div className="flex items-center justify-center mb-6 sm:mb-8">
+              <div className="h-px w-8 sm:w-16 bg-gradient-to-r from-transparent to-[#d4af37]"></div>
+              <div className="mx-2 sm:mx-4 text-[#d4af37] text-xs sm:text-sm font-semibold tracking-widest uppercase">Premium MVNO Service</div>
+              <div className="h-px w-8 sm:w-16 bg-gradient-to-l from-transparent to-[#d4af37]"></div>
             </div>
 
-            <h1 className="text-5xl sm:text-6xl lg:text-8xl font-bold mb-8 leading-tight">
-              <span className="text-white drop-shadow-2xl">仕入れの相棒。</span>
-              <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#d4af37] via-[#f0d970] to-[#d4af37] drop-shadow-lg animate-pulse">
+            <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-8xl font-bold mb-6 sm:mb-8 leading-tight px-2">
+              <span className="text-white drop-shadow-2xl block">仕入れの相棒。</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#d4af37] via-[#f0d970] to-[#d4af37] drop-shadow-lg animate-pulse block mt-2">
                 音声込みで
               </span>
-              <span className="text-white drop-shadow-2xl">&quot;使うぶんだけ&quot;に最適化。</span>
+              <span className="text-white drop-shadow-2xl block mt-2">&quot;使うぶんだけ&quot;に</span>
+              <span className="text-white drop-shadow-2xl block">最適化。</span>
             </h1>
 
-            <p className="text-2xl sm:text-3xl text-white/90 mb-12 max-w-4xl mx-auto leading-relaxed font-light">
-              <span className="text-[#f0d970] font-bold">1GB/月880円</span>
-              <span className="mx-2">・</span>
-              <span className="text-white">音声＋SMS込み</span>
-              <br />
-              <span className="text-white/80 text-xl">重い月は</span>
-              <span className="text-[#f0d970] font-bold text-2xl">100GB目安（10GB/3日）</span>
-              <span className="text-white/80 text-xl">で使い倒せる。</span>
+            <p className="text-lg sm:text-2xl md:text-3xl text-white/90 mb-8 sm:mb-12 max-w-4xl mx-auto leading-relaxed font-light px-4">
+              <span className="text-[#f0d970] font-bold block sm:inline">1GB/月880円</span>
+              <span className="mx-2 hidden sm:inline">・</span>
+              <span className="text-white block sm:inline mt-1 sm:mt-0">音声＋SMS込み</span>
+              <br className="my-2" />
+              <span className="text-white/80 text-base sm:text-xl block sm:inline">重い月は</span>
+              <span className="text-[#f0d970] font-bold text-xl sm:text-2xl block sm:inline mt-1 sm:mt-0">100GB目安</span>
+              <span className="text-white/60 text-sm sm:text-lg block sm:inline">（10GB/3日）</span>
+              <span className="text-white/80 text-base sm:text-xl block sm:inline mt-1 sm:mt-0">で使い倒せる。</span>
             </p>
 
             {/* CTA Buttons */}
@@ -71,50 +72,51 @@ export default function HomePage() {
             </div>
 
             {/* 3-Month Pack Highlight - 豪華版 */}
-            <div className="relative bg-gradient-to-br from-[#d4af37]/30 via-[#d4af37]/10 to-transparent border-2 border-[#d4af37]/50 rounded-3xl p-10 max-w-5xl mx-auto backdrop-blur-md shadow-2xl shadow-[#d4af37]/20">
+            <div className="relative bg-gradient-to-br from-[#d4af37]/30 via-[#d4af37]/10 to-transparent border-2 border-[#d4af37]/50 rounded-2xl sm:rounded-3xl p-6 sm:p-10 max-w-5xl mx-auto backdrop-blur-md shadow-2xl shadow-[#d4af37]/20">
               {/* 装飾的なコーナー */}
-              <div className="absolute top-0 left-0 w-20 h-20 border-t-4 border-l-4 border-[#f0d970] rounded-tl-3xl"></div>
-              <div className="absolute bottom-0 right-0 w-20 h-20 border-b-4 border-r-4 border-[#f0d970] rounded-br-3xl"></div>
+              <div className="absolute top-0 left-0 w-12 h-12 sm:w-20 sm:h-20 border-t-2 border-l-2 sm:border-t-4 sm:border-l-4 border-[#f0d970] rounded-tl-2xl sm:rounded-tl-3xl"></div>
+              <div className="absolute bottom-0 right-0 w-12 h-12 sm:w-20 sm:h-20 border-b-2 border-r-2 sm:border-b-4 sm:border-r-4 border-[#f0d970] rounded-br-2xl sm:rounded-br-3xl"></div>
 
-              <h3 className="text-3xl font-bold text-[#f0d970] mb-6 drop-shadow-lg">
-                事務手数料込み・3ヶ月パック
-                <span className="block text-xl text-white/80 mt-2">（音声＋SMS）</span>
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#f0d970] mb-4 sm:mb-6 drop-shadow-lg px-4">
+                <span className="block">事務手数料込み・</span>
+                <span className="block">3ヶ月パック</span>
+                <span className="block text-base sm:text-xl text-white/80 mt-2">（音声＋SMS）</span>
               </h3>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
-                <div className="relative bg-gradient-to-br from-black/50 to-black/30 rounded-2xl p-8 border-2 border-[#d4af37]/40 shadow-xl hover:border-[#f0d970] transition-all duration-300 transform hover:scale-105">
-                  <div className="absolute -top-3 -right-3 bg-gradient-to-r from-[#d4af37] to-[#f0d970] text-black text-xs font-bold px-4 py-1 rounded-full">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 text-left px-2">
+                <div className="relative bg-gradient-to-br from-black/50 to-black/30 rounded-xl sm:rounded-2xl p-5 sm:p-8 border-2 border-[#d4af37]/40 shadow-xl hover:border-[#f0d970] transition-all duration-300 transform hover:scale-105">
+                  <div className="absolute -top-2 -right-2 sm:-top-3 sm:-right-3 bg-gradient-to-r from-[#d4af37] to-[#f0d970] text-black text-xs font-bold px-3 py-1 rounded-full">
                     お得
                   </div>
-                  <div className="text-[#f0d970] text-sm mb-3 font-semibold">50回線以上の一括申込</div>
-                  <div className="text-5xl font-bold text-white mb-3">
+                  <div className="text-[#f0d970] text-xs sm:text-sm mb-2 sm:mb-3 font-semibold">50回線以上の一括申込</div>
+                  <div className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-2 sm:mb-3">
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#d4af37] to-[#f0d970]">¥4,200</span>
-                    <span className="text-xl text-white/60">/回線</span>
+                    <span className="text-base sm:text-xl text-white/60">/回線</span>
                   </div>
-                  <div className="text-white/80 text-sm">3ヶ月分・税込</div>
+                  <div className="text-white/80 text-xs sm:text-sm">3ヶ月分・税込</div>
                 </div>
 
-                <div className="relative bg-gradient-to-br from-black/50 to-black/30 rounded-2xl p-8 border-2 border-[#d4af37]/40 shadow-xl hover:border-[#f0d970] transition-all duration-300 transform hover:scale-105">
-                  <div className="text-[#f0d970] text-sm mb-3 font-semibold">50回線未満</div>
-                  <div className="text-5xl font-bold text-white mb-3">
+                <div className="relative bg-gradient-to-br from-black/50 to-black/30 rounded-xl sm:rounded-2xl p-5 sm:p-8 border-2 border-[#d4af37]/40 shadow-xl hover:border-[#f0d970] transition-all duration-300 transform hover:scale-105">
+                  <div className="text-[#f0d970] text-xs sm:text-sm mb-2 sm:mb-3 font-semibold">50回線未満</div>
+                  <div className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-2 sm:mb-3">
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#d4af37] to-[#f0d970]">¥4,600</span>
-                    <span className="text-xl text-white/60">/回線</span>
+                    <span className="text-base sm:text-xl text-white/60">/回線</span>
                   </div>
-                  <div className="text-white/80 text-sm">3ヶ月分・税込</div>
+                  <div className="text-white/80 text-xs sm:text-sm">3ヶ月分・税込</div>
                 </div>
               </div>
 
-              <div className="mt-8 pt-6 border-t border-[#d4af37]/30">
-                <p className="text-white/90 text-base flex items-center justify-center gap-4">
+              <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-[#d4af37]/30">
+                <p className="text-white/90 text-sm sm:text-base flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 px-4">
                   <span className="flex items-center">
-                    <svg className="w-5 h-5 text-[#d4af37] mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-[#d4af37] mr-2" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
                     SIM登録・個別配送込み
                   </span>
-                  <span className="text-[#d4af37]">・</span>
+                  <span className="text-[#d4af37] hidden sm:inline">・</span>
                   <span className="flex items-center">
-                    <svg className="w-5 h-5 text-[#d4af37] mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-[#d4af37] mr-2" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
                     MNP転出0円
@@ -141,19 +143,19 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/30 to-black/40 z-0"></div>
 
         <div className="container mx-auto max-w-7xl relative z-10">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
+          <div className="text-center mb-12 sm:mb-16 px-4">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
               <span className="text-white">選ばれる</span>
               <span className="text-[#d4af37]">3つの理由</span>
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 px-4">
             {/* Feature 1 */}
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-8 hover:border-[#d4af37]/50 hover:shadow-xl hover:shadow-[#d4af37]/10 transition-all duration-300">
-              <div className="w-16 h-16 bg-gradient-to-br from-[#d4af37] to-[#f0d970] rounded-2xl flex items-center justify-center mb-6">
+            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl sm:rounded-3xl p-6 sm:p-8 hover:border-[#d4af37]/50 hover:shadow-xl hover:shadow-[#d4af37]/10 transition-all duration-300">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-[#d4af37] to-[#f0d970] rounded-xl sm:rounded-2xl flex items-center justify-center mb-4 sm:mb-6">
                 <svg
-                  className="w-8 h-8 text-black"
+                  className="w-7 h-7 sm:w-8 sm:h-8 text-black"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -166,17 +168,17 @@ export default function HomePage() {
                   />
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold text-white mb-4">音声通話込み</h3>
-              <p className="text-white/70 leading-relaxed">
+              <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4">音声通話込み</h3>
+              <p className="text-sm sm:text-base text-white/70 leading-relaxed">
                 すべてのプランに音声通話＋SMSが標準搭載。データ専用SIMではありません。定額通話オプションも充実。
               </p>
             </div>
 
             {/* Feature 2 */}
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-8 hover:border-[#d4af37]/50 hover:shadow-xl hover:shadow-[#d4af37]/10 transition-all duration-300">
-              <div className="w-16 h-16 bg-gradient-to-br from-[#d4af37] to-[#f0d970] rounded-2xl flex items-center justify-center mb-6">
+            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl sm:rounded-3xl p-6 sm:p-8 hover:border-[#d4af37]/50 hover:shadow-xl hover:shadow-[#d4af37]/10 transition-all duration-300">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-[#d4af37] to-[#f0d970] rounded-xl sm:rounded-2xl flex items-center justify-center mb-4 sm:mb-6">
                 <svg
-                  className="w-8 h-8 text-black"
+                  className="w-7 h-7 sm:w-8 sm:h-8 text-black"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -189,17 +191,17 @@ export default function HomePage() {
                   />
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold text-white mb-4">選べる設計</h3>
-              <p className="text-white/70 leading-relaxed">
+              <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4">選べる設計</h3>
+              <p className="text-sm sm:text-base text-white/70 leading-relaxed">
                 自動最適化ではなく、容量を自分で選ぶスタイル。使わない月は最小限、使う月は大容量に。無駄なく使える。
               </p>
             </div>
 
             {/* Feature 3 */}
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-8 hover:border-[#d4af37]/50 hover:shadow-xl hover:shadow-[#d4af37]/10 transition-all duration-300">
-              <div className="w-16 h-16 bg-gradient-to-br from-[#d4af37] to-[#f0d970] rounded-2xl flex items-center justify-center mb-6">
+            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl sm:rounded-3xl p-6 sm:p-8 hover:border-[#d4af37]/50 hover:shadow-xl hover:shadow-[#d4af37]/10 transition-all duration-300">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-[#d4af37] to-[#f0d970] rounded-xl sm:rounded-2xl flex items-center justify-center mb-4 sm:mb-6">
                 <svg
-                  className="w-8 h-8 text-black"
+                  className="w-7 h-7 sm:w-8 sm:h-8 text-black"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -212,8 +214,8 @@ export default function HomePage() {
                   />
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold text-white mb-4">請求シンプル</h3>
-              <p className="text-white/70 leading-relaxed">
+              <h3 className="text-xl sm:text-2xl font-bold text-white mb-3 sm:mb-4">請求シンプル</h3>
+              <p className="text-sm sm:text-base text-white/70 leading-relaxed">
                 わかりやすい価格体系で、末尾は「80円」系で統一。隠れた費用なし。解約金なし。安心して使える。
               </p>
             </div>

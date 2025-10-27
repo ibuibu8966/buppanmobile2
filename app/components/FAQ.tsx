@@ -86,29 +86,29 @@ export default function FAQ() {
   };
 
   return (
-    <section id="faq" className="py-20 px-4 sm:px-6 lg:px-8 bg-white/5">
+    <section id="faq" className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8 bg-white/5">
       <div className="container mx-auto max-w-4xl">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
+        <div className="text-center mb-8 sm:mb-12">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4">
             <span className="text-white">よくある</span>
             <span className="text-[#d4af37]">質問</span>
           </h2>
-          <p className="text-white/60 text-lg">
+          <p className="text-white/60 text-sm sm:text-base md:text-lg px-4">
             お客様から寄せられるよくある質問にお答えします
           </p>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {faqData.map((faq, index) => (
             <div
               key={index}
-              className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden hover:border-[#d4af37]/50 transition-all duration-300"
+              className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl sm:rounded-2xl overflow-hidden hover:border-[#d4af37]/50 transition-all duration-300"
             >
               <button
                 onClick={() => toggleFAQ(index)}
-                className="w-full px-6 py-5 flex items-center justify-between text-left hover:bg-white/5 transition-colors duration-200"
+                className="w-full px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between text-left hover:bg-white/5 transition-colors duration-200"
               >
-                <span className="text-white font-semibold pr-8">
+                <span className="text-white font-semibold pr-4 sm:pr-8 text-sm sm:text-base">
                   {faq.question}
                 </span>
                 <svg
@@ -128,7 +128,7 @@ export default function FAQ() {
                 </svg>
               </button>
               {openIndex === index && (
-                <div className="px-6 pb-5 text-white/70 leading-relaxed">
+                <div className="px-4 sm:px-6 pb-4 sm:pb-5 text-white/70 leading-relaxed text-sm sm:text-base">
                   {faq.answer}
                 </div>
               )}
@@ -136,8 +136,8 @@ export default function FAQ() {
           ))}
         </div>
 
-        <div className="mt-12 text-center">
-          <p className="text-white/60 mb-4">
+        <div className="mt-8 sm:mt-12 text-center px-4">
+          <p className="text-white/60 mb-3 sm:mb-4 text-sm sm:text-base">
             その他のご質問がございましたら、お気軽にお問い合わせください
           </p>
           <a
