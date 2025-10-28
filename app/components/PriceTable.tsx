@@ -17,7 +17,7 @@ const standardPlans: PricePlan[] = [
 ];
 
 const enterprisePlans: PricePlan[] = [
-  { capacity: '1GB', price: '¥780', notes: '音声＋SMS込み' },
+  { capacity: '1GB', price: '¥830', notes: '音声＋SMS込み' },
   { capacity: '3GB', price: '¥1,280', notes: '3日500MBで制御' },
   { capacity: '7.5GB', price: '¥1,980', notes: '3日1GBで制御' },
   { capacity: '10GB', price: '¥2,580', notes: '3日1.5GBで制御' },
@@ -114,7 +114,7 @@ export default function PriceTable() {
                     100回線以上（継続）専用プラン
                   </p>
                   <p className={`text-sm leading-relaxed ${is100Plus ? 'text-[#d4af37]/90' : 'text-white/60'}`}>
-                    継続利用＆毎月100回線以上のご契約で、標準価格から税込100円引き（各容量一律）
+                    継続利用＆毎月100回線以上のご契約で、1GBプランは50円引き、その他は100円引き
                   </p>
                 </div>
               </div>
@@ -143,7 +143,7 @@ export default function PriceTable() {
                       {standardPlans[index].price}
                     </div>
                     <div className="text-sm text-[#f0d970] font-semibold mb-1">
-                      -100円
+                      {index === 0 ? '-50円' : '-100円'}
                     </div>
                     <div className="text-4xl font-bold">
                       <span className="text-[#d4af37]">{plan.price}</span>
