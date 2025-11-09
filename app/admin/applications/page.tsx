@@ -149,12 +149,12 @@ export default function ApplicationsPage() {
 
   const getShippedCount = (app: Application) => {
     if (!app.lines) return 0
-    return app.lines.filter(line => line.lineStatus === 'shipped').length
+    return app.lines.filter(line => line.shipmentDate).length
   }
 
   const getReturnedCount = (app: Application) => {
     if (!app.lines) return 0
-    return app.lines.filter(line => line.lineStatus === 'returned').length
+    return app.lines.filter(line => line.returnDate).length
   }
 
   const getVerificationBadge = (status: string) => {
