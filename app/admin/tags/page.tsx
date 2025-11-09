@@ -42,8 +42,8 @@ export default function TagsPage() {
       setSimLocationTags(simLocations)
       setSpareTags(spares)
     } catch (error) {
-      console.error('Tag fetch error:', error)
-      alert('Failed to fetch tags')
+      console.error('タグの取得エラー:', error)
+      alert('タグの取得に失敗しました')
     } finally {
       setLoading(false)
     }
@@ -51,7 +51,7 @@ export default function TagsPage() {
 
   const handleAddTag = async (type: 'sim_location' | 'spare', name: string) => {
     if (!name.trim()) {
-      alert('Please enter tag name')
+      alert('タグ名を入力してください')
       return
     }
 
@@ -77,17 +77,17 @@ export default function TagsPage() {
         fetchTags()
       } else {
         const data = await response.json()
-        alert(data.error || 'Failed to create tag')
+        alert(data.error || 'タグの作成に失敗しました')
       }
     } catch (error) {
-      console.error('Tag create error:', error)
-      alert('Failed to create tag')
+      console.error('タグ作成エラー:', error)
+      alert('タグの作成に失敗しました')
     }
   }
 
   const handleUpdateTag = async (tagId: string, name: string) => {
     if (!name.trim()) {
-      alert('Please enter tag name')
+      alert('タグ名を入力してください')
       return
     }
 
@@ -104,16 +104,16 @@ export default function TagsPage() {
         fetchTags()
       } else {
         const data = await response.json()
-        alert(data.error || 'Failed to update tag')
+        alert(data.error || 'タグの更新に失敗しました')
       }
     } catch (error) {
-      console.error('Tag update error:', error)
-      alert('Failed to update tag')
+      console.error('タグ更新エラー:', error)
+      alert('タグの更新に失敗しました')
     }
   }
 
   const handleDeleteTag = async (tagId: string) => {
-    if (!confirm('Delete this tag?')) {
+    if (!confirm('このタグを削除しますか？')) {
       return
     }
 
@@ -126,11 +126,11 @@ export default function TagsPage() {
         fetchTags()
       } else {
         const data = await response.json()
-        alert(data.error || 'Failed to delete tag')
+        alert(data.error || 'タグの削除に失敗しました')
       }
     } catch (error) {
-      console.error('Tag delete error:', error)
-      alert('Failed to delete tag')
+      console.error('タグ削除エラー:', error)
+      alert('タグの削除に失敗しました')
     }
   }
 
@@ -147,7 +147,7 @@ export default function TagsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-gray-500">Loading...</div>
+        <div className="text-gray-500">読み込み中...</div>
       </div>
     )
   }
@@ -155,18 +155,18 @@ export default function TagsPage() {
   return (
     <div className="h-full overflow-auto bg-gray-100 p-6">
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Tag Management</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">タグ管理</h1>
 
         <div className="grid grid-cols-2 gap-6">
           {/* SIM Location Tags */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900">SIM Location Tags</h2>
+              <h2 className="text-xl font-bold text-gray-900">SIMの場所タグ</h2>
               <button
                 onClick={() => setIsAddingSimLocation(true)}
                 className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
               >
-                + Add
+                + 追加
               </button>
             </div>
 
@@ -176,7 +176,7 @@ export default function TagsPage() {
                   type="text"
                   value={newSimLocationName}
                   onChange={(e) => setNewSimLocationName(e.target.value)}
-                  placeholder="Enter tag name"
+                  placeholder="タグ名を入力"
                   className="w-full px-3 py-2 border border-gray-300 rounded mb-2 text-gray-900"
                   autoFocus
                 />
@@ -185,7 +185,7 @@ export default function TagsPage() {
                     onClick={() => handleAddTag('sim_location', newSimLocationName)}
                     className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
                   >
-                    Save
+                    保存
                   </button>
                   <button
                     onClick={() => {
@@ -194,7 +194,7 @@ export default function TagsPage() {
                     }}
                     className="px-3 py-1 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 text-sm"
                   >
-                    Cancel
+                    キャンセル
                   </button>
                 </div>
               </div>
@@ -202,7 +202,7 @@ export default function TagsPage() {
 
             <div className="space-y-2">
               {simLocationTags.length === 0 ? (
-                <p className="text-gray-500 text-sm">No tags</p>
+                <p className="text-gray-500 text-sm">タグがありません</p>
               ) : (
                 simLocationTags.map((tag) => (
                   <div
@@ -222,13 +222,13 @@ export default function TagsPage() {
                           onClick={() => handleUpdateTag(tag.id, editingName)}
                           className="px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
                         >
-                          Save
+                          保存
                         </button>
                         <button
                           onClick={cancelEdit}
                           className="px-2 py-1 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 text-sm"
                         >
-                          Cancel
+                          キャンセル
                         </button>
                       </div>
                     ) : (
@@ -239,13 +239,13 @@ export default function TagsPage() {
                             onClick={() => startEdit(tag)}
                             className="text-blue-600 hover:text-blue-800 text-sm"
                           >
-                            Edit
+                            編集
                           </button>
                           <button
                             onClick={() => handleDeleteTag(tag.id)}
                             className="text-red-600 hover:text-red-800 text-sm"
                           >
-                            Delete
+                            削除
                           </button>
                         </div>
                       </>
@@ -259,12 +259,12 @@ export default function TagsPage() {
           {/* Spare Tags */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Spare Tags</h2>
+              <h2 className="text-xl font-bold text-gray-900">予備タグ</h2>
               <button
                 onClick={() => setIsAddingSpare(true)}
                 className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
               >
-                + Add
+                + 追加
               </button>
             </div>
 
@@ -274,7 +274,7 @@ export default function TagsPage() {
                   type="text"
                   value={newSpareName}
                   onChange={(e) => setNewSpareName(e.target.value)}
-                  placeholder="Enter tag name"
+                  placeholder="タグ名を入力"
                   className="w-full px-3 py-2 border border-gray-300 rounded mb-2 text-gray-900"
                   autoFocus
                 />
@@ -283,7 +283,7 @@ export default function TagsPage() {
                     onClick={() => handleAddTag('spare', newSpareName)}
                     className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
                   >
-                    Save
+                    保存
                   </button>
                   <button
                     onClick={() => {
@@ -292,7 +292,7 @@ export default function TagsPage() {
                     }}
                     className="px-3 py-1 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 text-sm"
                   >
-                    Cancel
+                    キャンセル
                   </button>
                 </div>
               </div>
@@ -300,7 +300,7 @@ export default function TagsPage() {
 
             <div className="space-y-2">
               {spareTags.length === 0 ? (
-                <p className="text-gray-500 text-sm">No tags</p>
+                <p className="text-gray-500 text-sm">タグがありません</p>
               ) : (
                 spareTags.map((tag) => (
                   <div
@@ -320,13 +320,13 @@ export default function TagsPage() {
                           onClick={() => handleUpdateTag(tag.id, editingName)}
                           className="px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
                         >
-                          Save
+                          保存
                         </button>
                         <button
                           onClick={cancelEdit}
                           className="px-2 py-1 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 text-sm"
                         >
-                          Cancel
+                          キャンセル
                         </button>
                       </div>
                     ) : (
@@ -337,13 +337,13 @@ export default function TagsPage() {
                             onClick={() => startEdit(tag)}
                             className="text-blue-600 hover:text-blue-800 text-sm"
                           >
-                            Edit
+                            編集
                           </button>
                           <button
                             onClick={() => handleDeleteTag(tag.id)}
                             className="text-red-600 hover:text-red-800 text-sm"
                           >
-                            Delete
+                            削除
                           </button>
                         </div>
                       </>
