@@ -1,0 +1,154 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// 申し込み情報
+model Application {
+  id                String   @id @default(uuid())
+
+  // 申込者タイプ
+  applicantType     String   // 'individual' | 'corporate'
+
+  // 個人情報
+  lastName          String?
+  firstName         String?
+  lastNameKana      String?
+  firstNameKana     String?
+
+  // 法人情報
+  companyName       String?
+  companyNameKana   String?
+  corporateNumber   String?
+  establishedDate   DateTime?
+
+  // 代表者情報（法人のみ）
+  representativeLastName     String?
+  representativeFirstName    String?
+  representativeLastNameKana String?
+  representativeFirstNameKana String?
+  representativeBirthDate    DateTime?
+
+  // 担当者情報（法人のみ）
+  contactLastName     String?
+  contactFirstName    String?
+  contactLastNameKana String?
+  contactFirstNameKana String?
+
+  // 共通情報
+  phone             String
+  email             String
+  postalCode        String
+  address           String
+  dateOfBirth       DateTime?
+
+  // プラン情報
+  planType          String   // '3month-50plus' | '3month-under50'
+  lineCount         Int
+  totalAmount       Int      // 合計金額
+
+  // 書類アップロード
+  idCardFrontUrl    String?  // 身分証表
+  idCardBackUrl     String?  // 身分証裏
+  registrationUrl   String?  // 登記簿謄本（法人のみ）
+
+  // 同意チェックボックス
+  agreePrivacy      Boolean? // プライバシーポリシーに同意
+  agreeTerms        Boolean? // 利用規約に同意
+  agreeTelecom      Boolean? // 電気通信事業法に同意
+  agreeWithdrawal   Boolean? // 解約時の規約に同意
+  agreeNoAntisocial Boolean? // 反社会的勢力でないことに同意
+
+  // ステータス
+  verificationStatus String  @default("unverified") // 'unverified' | 'verified' | 'issue'
+  paymentStatus      String  @default("not_issued") // 'not_issued' | 'issued' | 'paid'
+  status             String  @default("draft")      // 'draft' | 'submitted' | 'processing' | 'completed'
+
+  // コメント
+  comment1          String?  @db.Text
+  comment2          String?  @db.Text
+
+  // タイムスタンプ
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  submittedAt       DateTime?
+
+  // リレーション
+  lines             Line[]
+
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// 回線情報
+model Line {
+  id                String   @id @default(uuid())
+  applicationId     String
+
+  // 回線情報
+  phoneNumber       String?
+  simLocationId     String?  // SIMの場所タグID
+  spareTagId        String?  // 予備タグID
+  returnDate        DateTime?
+  shipmentDate      DateTime?
+  lineStatus        String   @default("not_opened") // 'not_opened' | 'opened' | 'shipped' | 'waiting_return' | 'returned' | 'canceled'
+
+  // タイムスタンプ
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // リレーション
+  application       Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  simLocation       Tag?        @relation("SimLocation", fields: [simLocationId], references: [id])
+  spareTag          Tag?        @relation("SpareTag", fields: [spareTagId], references: [id])
+
+  @@index([applicationId])
+  @@index([phoneNumber])
+}
+
+// タグ管理（SIMの場所、予備タグ）
+model Tag {
+  id                String   @id @default(uuid())
+  name              String   @unique
+  type              String   // 'sim_location' | 'spare'
+  color             String?  // タグの色（オプション）
+  order             Int      @default(0) // 表示順序
+
+  // タイムスタンプ
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // リレーション
+  linesAsSimLocation Line[]  @relation("SimLocation")
+  linesAsSpareTag    Line[]  @relation("SpareTag")
+
+  @@index([type])
+}
+
+// 管理者
+model Admin {
+  id                String   @id @default(uuid())
+  email             String   @unique
+  password          String   // ハッシュ化されたパスワード
+  name              String
+  role              String   @default("admin")
+
+  // タイムスタンプ
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  lastLoginAt       DateTime?
+
+  @@index([email])
+}

@@ -1,589 +1,1165 @@
-'use client';
+'use client'
 
-import { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import { useState, useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import Header from '../components/Header'
+import Footer from '../components/Footer'
+import { step1Schema, step2Schema, step3Schema, step4Schema } from '@/lib/validations'
+import { PLAN_PRICES, type ApplicationStep, type PlanType } from '@/lib/types'
 
-type ApplyType = 'new' | 'mnp';
-type Step = 1 | 2 | 3 | 4;
+type FormData = {
+  // ステップ1
+  applicantType: 'individual' | 'corporate'
+  lastName?: string
+  firstName?: string
+  lastNameKana?: string
+  firstNameKana?: string
+  companyName?: string
+  companyNameKana?: string
+  corporateNumber?: string
+  establishedDate?: string
+  representativeLastName?: string
+  representativeFirstName?: string
+  representativeLastNameKana?: string
+  representativeFirstNameKana?: string
+  representativeBirthDate?: string
+  contactLastName?: string
+  contactFirstName?: string
+  contactLastNameKana?: string
+  contactFirstNameKana?: string
+  phone: string
+  email: string
+  postalCode: string
+  address: string
+  dateOfBirth?: string
 
-function ApplyForm() {
-  const searchParams = useSearchParams();
-  const [applyType, setApplyType] = useState<ApplyType>('new');
-  const [currentStep, setCurrentStep] = useState<Step>(1);
-  const [formData, setFormData] = useState({
-    // Step 1: Identity Verification
+  // ステップ2
+  planType?: PlanType
+  lineCount?: number
+
+  // ステップ3
+  idCardFrontUrl?: string
+  idCardBackUrl?: string
+  registrationUrl?: string
+
+  // ステップ4
+  agreePrivacy?: boolean
+  agreeTerms?: boolean
+  agreeTelecom?: boolean
+  agreeWithdrawal?: boolean
+  agreeNoAntisocial?: boolean
+}
+
+export default function ApplyPage() {
+  const [currentStep, setCurrentStep] = useState<ApplicationStep>(1)
+  const [applicationId, setApplicationId] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [uploadingFile, setUploadingFile] = useState<string | null>(null)
+
+  const [formData, setFormData] = useState<FormData>({
     applicantType: 'individual',
-    fullName: '',
-    dateOfBirth: '',
-    email: '',
     phone: '',
+    email: '',
+    postalCode: '',
     address: '',
-    companyName: '',
-    companyRegistration: '',
+  })
 
-    // Step 2: Plan Selection
-    plan: '1GB',
-    callOption: 'none',
-    lineCount: '1',
-
-    // Step 3: Payment
-    paymentMethod: 'credit',
-
-    // MNP Specific
-    mnpNumber: '',
-    mnpExpiry: '',
-    carrierType: '',
-  });
-
+  // セッションストレージから途中保存データを復元
   useEffect(() => {
-    const type = searchParams.get('type');
-    if (type === 'mnp' || type === 'new') {
-      setApplyType(type);
+    const saved = sessionStorage.getItem('applicationDraft')
+    if (saved) {
+      const parsed = JSON.parse(saved)
+      setFormData(parsed.formData)
+      setCurrentStep(parsed.currentStep)
+      setApplicationId(parsed.applicationId)
     }
-  }, [searchParams]);
+  }, [])
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
+  // フォームデータが変わるたびにセッションストレージに保存
+  useEffect(() => {
+    sessionStorage.setItem('applicationDraft', JSON.stringify({
+      formData,
+      currentStep,
+      applicationId,
+    }))
+  }, [formData, currentStep, applicationId])
 
-  const nextStep = () => {
-    if (currentStep < 4) {
-      setCurrentStep((currentStep + 1) as Step);
+  const steps = [
+    { number: 1, title: '個人情報入力' },
+    { number: 2, title: 'プラン選択' },
+    { number: 3, title: '書類アップロード' },
+    { number: 4, title: '確認' },
+    { number: 5, title: '完了' },
+  ]
+
+  const updateFormData = (data: Partial<FormData>) => {
+    setFormData(prev => ({ ...prev, ...data }))
+  }
+
+  const saveToDatabase = async (status: 'draft' | 'submitted' = 'draft') => {
+    try {
+      const totalAmount = formData.planType && formData.lineCount
+        ? PLAN_PRICES[formData.planType] * formData.lineCount
+        : 0
+
+      const response = await fetch('/api/applications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: applicationId,
+          step: currentStep,
+          status,
+          data: {
+            ...formData,
+            totalAmount,
+          },
+        }),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        console.error('APIエラー:', result)
+        throw new Error(result.details || result.error || '保存に失敗しました')
+      }
+
+      if (result.application && !applicationId) {
+        setApplicationId(result.application.id)
+      }
+
+      return result
+    } catch (error) {
+      console.error('保存エラー:', error)
+      alert(error instanceof Error ? error.message : '保存に失敗しました')
+      throw error
     }
-  };
+  }
+
+  const nextStep = async () => {
+    await saveToDatabase('draft')
+    if (currentStep < 5) {
+      setCurrentStep((currentStep + 1) as ApplicationStep)
+    }
+  }
 
   const prevStep = () => {
     if (currentStep > 1) {
-      setCurrentStep((currentStep - 1) as Step);
+      setCurrentStep((currentStep - 1) as ApplicationStep)
     }
-  };
+  }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    alert('申込が完了しました！（デモ）');
-  };
+  const handleFileUpload = async (file: File, fieldName: string) => {
+    try {
+      setUploadingFile(fieldName)
+      const formDataObj = new FormData()
+      formDataObj.append('file', file)
+      formDataObj.append('folder', 'documents')
 
-  const steps = [
-    { number: 1, title: '本人確認' },
-    { number: 2, title: 'プラン選択' },
-    { number: 3, title: '支払い情報' },
-    { number: 4, title: '最終確認' },
-  ];
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formDataObj,
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        console.error('アップロードAPIエラー:', result)
+        throw new Error(result.error || 'アップロードに失敗しました')
+      }
+
+      updateFormData({ [fieldName]: result.url })
+    } catch (error) {
+      console.error('ファイルアップロードエラー:', error)
+      alert(error instanceof Error ? error.message : 'ファイルのアップロードに失敗しました')
+    } finally {
+      setUploadingFile(null)
+    }
+  }
+
+  const handleFinalSubmit = async () => {
+    try {
+      setIsSubmitting(true)
+      await saveToDatabase('submitted')
+      setCurrentStep(5)
+      sessionStorage.removeItem('applicationDraft')
+    } catch (error) {
+      console.error('送信エラー:', error)
+      alert('申し込みの送信に失敗しました')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  // ステップ1の入力チェック
+  const isStep1Valid = () => {
+    if (formData.applicantType === 'individual') {
+      return !!(
+        formData.lastName && formData.firstName &&
+        formData.lastNameKana && formData.firstNameKana &&
+        formData.phone && formData.email &&
+        formData.postalCode && formData.address && formData.dateOfBirth
+      )
+    } else {
+      return !!(
+        formData.companyName && formData.companyNameKana &&
+        formData.corporateNumber && formData.establishedDate &&
+        formData.phone && formData.email &&
+        formData.representativeLastName && formData.representativeFirstName &&
+        formData.representativeLastNameKana && formData.representativeFirstNameKana &&
+        formData.representativeBirthDate &&
+        formData.contactLastName && formData.contactFirstName &&
+        formData.contactLastNameKana && formData.contactFirstNameKana &&
+        formData.postalCode && formData.address
+      )
+    }
+  }
+
+  // ステップ2の入力チェック
+  const isStep2Valid = () => {
+    if (!formData.planType || !formData.lineCount) return false
+    if (formData.planType === '3month-50plus' && formData.lineCount < 50) return false
+    if (formData.planType === '3month-under50' && formData.lineCount >= 50) return false
+    return true
+  }
+
+  // ステップ3の入力チェック
+  const isStep3Valid = () => {
+    if (!formData.idCardFrontUrl || !formData.idCardBackUrl) return false
+    if (formData.applicantType === 'corporate' && !formData.registrationUrl) return false
+    return true
+  }
+
+  // ステップ4の入力チェック
+  const isStep4Valid = () => {
+    return !!(
+      formData.agreePrivacy &&
+      formData.agreeTerms &&
+      formData.agreeTelecom &&
+      formData.agreeWithdrawal &&
+      formData.agreeNoAntisocial
+    )
+  }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[#0a0a0a]">
       <Header />
 
       <div className="pt-24 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="container mx-auto max-w-4xl">
-          {/* Header */}
+          {/* ヘッダー */}
           <div className="text-center mb-12">
             <h1 className="text-3xl sm:text-4xl font-bold mb-4">
-              <span className="text-white">お申し込み</span>
-              <span className="text-[#d4af37] ml-2">
-                {applyType === 'mnp' ? '（MNP転入）' : '（新規）'}
-              </span>
+              <span className="text-white">3ヶ月パック</span>
+              <span className="text-[#d4af37] ml-2">お申し込み</span>
             </h1>
-
-            {/* Apply Type Toggle */}
-            <div className="flex justify-center mb-8">
-              <div className="inline-flex bg-white/5 backdrop-blur-sm rounded-full p-1 border border-white/10">
-                <button
-                  onClick={() => setApplyType('new')}
-                  className={`px-6 py-2 rounded-full font-semibold transition-all duration-300 ${
-                    applyType === 'new'
-                      ? 'bg-gradient-to-r from-[#d4af37] to-[#f0d970] text-black'
-                      : 'text-white/60 hover:text-white'
-                  }`}
-                >
-                  新規申込
-                </button>
-                <button
-                  onClick={() => setApplyType('mnp')}
-                  className={`px-6 py-2 rounded-full font-semibold transition-all duration-300 ${
-                    applyType === 'mnp'
-                      ? 'bg-gradient-to-r from-[#d4af37] to-[#f0d970] text-black'
-                      : 'text-white/60 hover:text-white'
-                  }`}
-                >
-                  MNP転入
-                </button>
-              </div>
-            </div>
           </div>
 
-          {/* Stepper */}
-          <div className="mb-12">
-            <div className="flex items-center justify-between max-w-2xl mx-auto">
-              {steps.map((step, index) => (
-                <div key={step.number} className="flex items-center flex-1">
-                  <div className="flex flex-col items-center flex-1">
-                    <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center font-bold mb-2 transition-all duration-300 ${
+          {/* ステッパー */}
+          {currentStep < 5 && (
+            <div className="mb-12">
+              <div className="flex items-center justify-between max-w-3xl mx-auto">
+                {steps.slice(0, 4).map((step, index) => (
+                  <div key={step.number} className="flex items-center flex-1">
+                    <div className="flex flex-col items-center flex-1">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all duration-300 ${
                         currentStep >= step.number
                           ? 'bg-gradient-to-r from-[#d4af37] to-[#f0d970] text-black'
-                          : 'bg-white/10 text-white/40'
-                      }`}
-                    >
-                      {step.number}
-                    </div>
-                    <div
-                      className={`text-xs sm:text-sm font-medium text-center ${
+                          : 'bg-white/10 text-white/40 border-2 border-white/20'
+                      }`}>
+                        {step.number}
+                      </div>
+                      <span className={`text-xs mt-2 transition-colors duration-300 ${
                         currentStep >= step.number ? 'text-[#d4af37]' : 'text-white/40'
-                      }`}
-                    >
-                      {step.title}
+                      }`}>
+                        {step.title}
+                      </span>
+                    </div>
+                    {index < 3 && (
+                      <div className={`h-0.5 flex-1 mx-2 transition-all duration-300 ${
+                        currentStep > step.number ? 'bg-[#d4af37]' : 'bg-white/20'
+                      }`} />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ステップコンテンツ */}
+          <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-8 border border-white/10">
+            {/* ステップ1: 個人情報入力 */}
+            {currentStep === 1 && (
+              <div>
+                <h2 className="text-2xl font-bold text-white mb-6">個人情報入力</h2>
+
+                {/* 個人/法人タブ */}
+                <div className="flex gap-4 mb-8">
+                  <button
+                    type="button"
+                    onClick={() => updateFormData({ applicantType: 'individual' })}
+                    className={`flex-1 py-3 rounded-xl font-semibold transition-all duration-300 ${
+                      formData.applicantType === 'individual'
+                        ? 'bg-gradient-to-r from-[#d4af37] to-[#f0d970] text-black'
+                        : 'bg-white/10 text-white/60 hover:bg-white/20'
+                    }`}
+                  >
+                    個人
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => updateFormData({ applicantType: 'corporate' })}
+                    className={`flex-1 py-3 rounded-xl font-semibold transition-all duration-300 ${
+                      formData.applicantType === 'corporate'
+                        ? 'bg-gradient-to-r from-[#d4af37] to-[#f0d970] text-black'
+                        : 'bg-white/10 text-white/60 hover:bg-white/20'
+                    }`}
+                  >
+                    法人
+                  </button>
+                </div>
+
+                {/* 個人フォーム */}
+                {formData.applicantType === 'individual' && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-white/80 mb-2">姓<span className="text-red-400">*</span></label>
+                        <input
+                          type="text"
+                          value={formData.lastName || ''}
+                          onChange={(e) => updateFormData({ lastName: e.target.value })}
+                          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
+                          placeholder="山田"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-white/80 mb-2">名<span className="text-red-400">*</span></label>
+                        <input
+                          type="text"
+                          value={formData.firstName || ''}
+                          onChange={(e) => updateFormData({ firstName: e.target.value })}
+                          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
+                          placeholder="太郎"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-white/80 mb-2">姓（カナ）<span className="text-red-400">*</span></label>
+                        <input
+                          type="text"
+                          value={formData.lastNameKana || ''}
+                          onChange={(e) => updateFormData({ lastNameKana: e.target.value })}
+                          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
+                          placeholder="ヤマダ"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-white/80 mb-2">名（カナ）<span className="text-red-400">*</span></label>
+                        <input
+                          type="text"
+                          value={formData.firstNameKana || ''}
+                          onChange={(e) => updateFormData({ firstNameKana: e.target.value })}
+                          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
+                          placeholder="タロウ"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-white/80 mb-2">電話番号<span className="text-red-400">*</span></label>
+                      <input
+                        type="tel"
+                        value={formData.phone}
+                        onChange={(e) => updateFormData({ phone: e.target.value })}
+                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
+                        placeholder="09012345678"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-white/80 mb-2">メールアドレス<span className="text-red-400">*</span></label>
+                      <input
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => updateFormData({ email: e.target.value })}
+                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
+                        placeholder="example@email.com"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-white/80 mb-2">郵便番号<span className="text-red-400">*</span></label>
+                      <input
+                        type="text"
+                        value={formData.postalCode}
+                        onChange={(e) => updateFormData({ postalCode: e.target.value })}
+                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
+                        placeholder="1234567"
+                        maxLength={7}
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-white/80 mb-2">住所<span className="text-red-400">*</span></label>
+                      <input
+                        type="text"
+                        value={formData.address}
+                        onChange={(e) => updateFormData({ address: e.target.value })}
+                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
+                        placeholder="東京都渋谷区..."
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-white/80 mb-2">生年月日<span className="text-red-400">*</span></label>
+                      <input
+                        type="date"
+                        value={formData.dateOfBirth || ''}
+                        onChange={(e) => updateFormData({ dateOfBirth: e.target.value })}
+                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
+                        required
+                      />
                     </div>
                   </div>
-                  {index < steps.length - 1 && (
-                    <div
-                      className={`h-0.5 flex-1 mx-2 transition-all duration-300 ${
-                        currentStep > step.number ? 'bg-[#d4af37]' : 'bg-white/10'
-                      }`}
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
+                )}
 
-          {/* Form */}
-          <form onSubmit={handleSubmit}>
-            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-6 sm:p-8">
-              {/* Step 1: Identity Verification */}
-              {currentStep === 1 && (
-                <div className="space-y-6">
-                  <h2 className="text-2xl font-bold text-white mb-6">本人確認情報</h2>
+                {/* 法人フォーム */}
+                {formData.applicantType === 'corporate' && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-white/80 mb-2">会社名<span className="text-red-400">*</span></label>
+                      <input
+                        type="text"
+                        value={formData.companyName || ''}
+                        onChange={(e) => updateFormData({ companyName: e.target.value })}
+                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
+                        placeholder="株式会社〇〇"
+                        required
+                      />
+                    </div>
 
-                  <div>
-                    <label className="block text-white/80 mb-2 font-medium">申込種別</label>
-                    <select
-                      name="applicantType"
-                      value={formData.applicantType}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:border-[#d4af37] transition-colors"
-                    >
-                      <option value="individual" className="bg-black">個人</option>
-                      <option value="corporate" className="bg-black">法人</option>
-                    </select>
-                  </div>
+                    <div>
+                      <label className="block text-white/80 mb-2">会社名（カナ）<span className="text-red-400">*</span></label>
+                      <input
+                        type="text"
+                        value={formData.companyNameKana || ''}
+                        onChange={(e) => updateFormData({ companyNameKana: e.target.value })}
+                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
+                        placeholder="カブシキガイシャ〇〇"
+                        required
+                      />
+                    </div>
 
-                  {formData.applicantType === 'corporate' && (
-                    <>
-                      <div>
-                        <label className="block text-white/80 mb-2 font-medium">会社名</label>
-                        <input
-                          type="text"
-                          name="companyName"
-                          value={formData.companyName}
-                          onChange={handleInputChange}
-                          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
-                          placeholder="合同会社ピーチ"
-                          required
-                        />
+                    <div>
+                      <label className="block text-white/80 mb-2">法人番号<span className="text-red-400">*</span></label>
+                      <input
+                        type="text"
+                        value={formData.corporateNumber || ''}
+                        onChange={(e) => updateFormData({ corporateNumber: e.target.value })}
+                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
+                        placeholder="1234567890123"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-white/80 mb-2">設立年月日<span className="text-red-400">*</span></label>
+                      <input
+                        type="date"
+                        value={formData.establishedDate || ''}
+                        onChange={(e) => updateFormData({ establishedDate: e.target.value })}
+                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-white/80 mb-2">電話番号<span className="text-red-400">*</span></label>
+                      <input
+                        type="tel"
+                        value={formData.phone}
+                        onChange={(e) => updateFormData({ phone: e.target.value })}
+                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
+                        placeholder="0312345678"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-white/80 mb-2">メールアドレス<span className="text-red-400">*</span></label>
+                      <input
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => updateFormData({ email: e.target.value })}
+                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
+                        placeholder="contact@company.com"
+                        required
+                      />
+                    </div>
+
+                    <div className="border-t border-white/10 pt-6 mt-6">
+                      <h3 className="text-xl font-bold text-white mb-4">代表者情報</h3>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                          <label className="block text-white/80 mb-2">代表者姓<span className="text-red-400">*</span></label>
+                          <input
+                            type="text"
+                            value={formData.representativeLastName || ''}
+                            onChange={(e) => updateFormData({ representativeLastName: e.target.value })}
+                            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
+                            placeholder="山田"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-white/80 mb-2">代表者名<span className="text-red-400">*</span></label>
+                          <input
+                            type="text"
+                            value={formData.representativeFirstName || ''}
+                            onChange={(e) => updateFormData({ representativeFirstName: e.target.value })}
+                            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
+                            placeholder="太郎"
+                            required
+                          />
+                        </div>
                       </div>
-                      <div>
-                        <label className="block text-white/80 mb-2 font-medium">登記番号</label>
-                        <input
-                          type="text"
-                          name="companyRegistration"
-                          value={formData.companyRegistration}
-                          onChange={handleInputChange}
-                          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
-                          placeholder="1234567890123"
-                          required
-                        />
-                      </div>
-                    </>
-                  )}
 
-                  <div>
-                    <label className="block text-white/80 mb-2 font-medium">
-                      {formData.applicantType === 'corporate' ? '担当者氏名' : '氏名'}
-                    </label>
-                    <input
-                      type="text"
-                      name="fullName"
-                      value={formData.fullName}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
-                      placeholder="山田 太郎"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-white/80 mb-2 font-medium">生年月日</label>
-                    <input
-                      type="date"
-                      name="dateOfBirth"
-                      value={formData.dateOfBirth}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:border-[#d4af37] transition-colors"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-white/80 mb-2 font-medium">メールアドレス</label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
-                      placeholder="example@example.com"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-white/80 mb-2 font-medium">電話番号</label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
-                      placeholder="090-1234-5678"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-white/80 mb-2 font-medium">住所</label>
-                    <input
-                      type="text"
-                      name="address"
-                      value={formData.address}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
-                      placeholder="〒100-0001 東京都千代田区..."
-                      required
-                    />
-                  </div>
-
-                  {applyType === 'mnp' && (
-                    <>
-                      <h3 className="text-xl font-bold text-[#d4af37] mt-8 mb-4">MNP情報</h3>
-
-                      <div>
-                        <label className="block text-white/80 mb-2 font-medium">MNP予約番号</label>
-                        <input
-                          type="text"
-                          name="mnpNumber"
-                          value={formData.mnpNumber}
-                          onChange={handleInputChange}
-                          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
-                          placeholder="12345678901"
-                          required
-                        />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                          <label className="block text-white/80 mb-2">代表者姓（カナ）<span className="text-red-400">*</span></label>
+                          <input
+                            type="text"
+                            value={formData.representativeLastNameKana || ''}
+                            onChange={(e) => updateFormData({ representativeLastNameKana: e.target.value })}
+                            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
+                            placeholder="ヤマダ"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-white/80 mb-2">代表者名（カナ）<span className="text-red-400">*</span></label>
+                          <input
+                            type="text"
+                            value={formData.representativeFirstNameKana || ''}
+                            onChange={(e) => updateFormData({ representativeFirstNameKana: e.target.value })}
+                            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
+                            placeholder="タロウ"
+                            required
+                          />
+                        </div>
                       </div>
 
                       <div>
-                        <label className="block text-white/80 mb-2 font-medium">有効期限</label>
+                        <label className="block text-white/80 mb-2">代表者生年月日<span className="text-red-400">*</span></label>
                         <input
                           type="date"
-                          name="mnpExpiry"
-                          value={formData.mnpExpiry}
-                          onChange={handleInputChange}
-                          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:border-[#d4af37] transition-colors"
+                          value={formData.representativeBirthDate || ''}
+                          onChange={(e) => updateFormData({ representativeBirthDate: e.target.value })}
+                          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="border-t border-white/10 pt-6 mt-6">
+                      <h3 className="text-xl font-bold text-white mb-4">担当者情報</h3>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                          <label className="block text-white/80 mb-2">担当者姓<span className="text-red-400">*</span></label>
+                          <input
+                            type="text"
+                            value={formData.contactLastName || ''}
+                            onChange={(e) => updateFormData({ contactLastName: e.target.value })}
+                            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
+                            placeholder="佐藤"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-white/80 mb-2">担当者名<span className="text-red-400">*</span></label>
+                          <input
+                            type="text"
+                            value={formData.contactFirstName || ''}
+                            onChange={(e) => updateFormData({ contactFirstName: e.target.value })}
+                            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
+                            placeholder="花子"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-white/80 mb-2">担当者姓（カナ）<span className="text-red-400">*</span></label>
+                          <input
+                            type="text"
+                            value={formData.contactLastNameKana || ''}
+                            onChange={(e) => updateFormData({ contactLastNameKana: e.target.value })}
+                            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
+                            placeholder="サトウ"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-white/80 mb-2">担当者名（カナ）<span className="text-red-400">*</span></label>
+                          <input
+                            type="text"
+                            value={formData.contactFirstNameKana || ''}
+                            onChange={(e) => updateFormData({ contactFirstNameKana: e.target.value })}
+                            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
+                            placeholder="ハナコ"
+                            required
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-white/10 pt-6 mt-6">
+                      <h3 className="text-xl font-bold text-white mb-4">所在地情報</h3>
+
+                      <div className="mb-4">
+                        <label className="block text-white/80 mb-2">郵便番号<span className="text-red-400">*</span></label>
+                        <input
+                          type="text"
+                          value={formData.postalCode}
+                          onChange={(e) => updateFormData({ postalCode: e.target.value })}
+                          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
+                          placeholder="1234567"
+                          maxLength={7}
                           required
                         />
                       </div>
 
                       <div>
-                        <label className="block text-white/80 mb-2 font-medium">回線種別</label>
-                        <select
-                          name="carrierType"
-                          value={formData.carrierType}
-                          onChange={handleInputChange}
-                          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:border-[#d4af37] transition-colors"
-                          required
-                        >
-                          <option value="" className="bg-black">選択してください</option>
-                          <option value="docomo" className="bg-black">ドコモ</option>
-                          <option value="au" className="bg-black">au</option>
-                          <option value="softbank" className="bg-black">ソフトバンク</option>
-                          <option value="rakuten" className="bg-black">楽天モバイル</option>
-                          <option value="mvno" className="bg-black">その他MVNO</option>
-                        </select>
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
-
-              {/* Step 2: Plan Selection */}
-              {currentStep === 2 && (
-                <div className="space-y-6">
-                  <h2 className="text-2xl font-bold text-white mb-6">プラン選択</h2>
-
-                  <div>
-                    <label className="block text-white/80 mb-2 font-medium">回線数</label>
-                    <input
-                      type="number"
-                      name="lineCount"
-                      value={formData.lineCount}
-                      onChange={handleInputChange}
-                      min="1"
-                      max={formData.applicantType === 'individual' ? '5' : '999'}
-                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none focus:border-[#d4af37] transition-colors"
-                      required
-                    />
-                    <p className="text-white/50 text-sm mt-2">
-                      {formData.applicantType === 'individual'
-                        ? '個人は最大5回線までです'
-                        : '法人で20回線以上のお申込は別途審査が必要です'}
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="block text-white/80 mb-4 font-medium">データプラン</label>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                      {['1GB', '3GB', '7.5GB', '10GB', '20GB', '100GB目安'].map((plan) => (
-                        <button
-                          key={plan}
-                          type="button"
-                          onClick={() => setFormData(prev => ({ ...prev, plan }))}
-                          className={`p-4 rounded-2xl border-2 transition-all duration-300 ${
-                            formData.plan === plan
-                              ? 'border-[#d4af37] bg-[#d4af37]/20'
-                              : 'border-white/20 bg-white/5 hover:border-white/40'
-                          }`}
-                        >
-                          <div className="text-white font-bold text-lg">{plan}</div>
-                          <div className="text-white/60 text-sm mt-1">
-                            {plan === '1GB' && '¥880/月'}
-                            {plan === '3GB' && '¥1,680/月'}
-                            {plan === '7.5GB' && '¥2,280/月'}
-                            {plan === '10GB' && '¥2,780/月'}
-                            {plan === '20GB' && '¥3,580/月'}
-                            {plan === '100GB目安' && '¥4,580/月'}
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-white/80 mb-4 font-medium">通話定額オプション（任意）</label>
-                    <div className="space-y-3">
-                      {[
-                        { value: 'none', label: 'なし', price: '¥0' },
-                        { value: '5min', label: '5分かけ放題', price: '¥660/月' },
-                        { value: '10min', label: '10分かけ放題', price: '¥880/月' },
-                        { value: 'unlimited', label: '完全かけ放題', price: '¥2,200/月' },
-                      ].map((option) => (
-                        <button
-                          key={option.value}
-                          type="button"
-                          onClick={() => setFormData(prev => ({ ...prev, callOption: option.value }))}
-                          className={`w-full p-4 rounded-2xl border-2 transition-all duration-300 flex justify-between items-center ${
-                            formData.callOption === option.value
-                              ? 'border-[#d4af37] bg-[#d4af37]/20'
-                              : 'border-white/20 bg-white/5 hover:border-white/40'
-                          }`}
-                        >
-                          <span className="text-white font-semibold">{option.label}</span>
-                          <span className="text-[#d4af37] font-bold">{option.price}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Step 3: Payment */}
-              {currentStep === 3 && (
-                <div className="space-y-6">
-                  <h2 className="text-2xl font-bold text-white mb-6">支払い情報</h2>
-
-                  <div>
-                    <label className="block text-white/80 mb-4 font-medium">支払い方法</label>
-                    <div className="space-y-3">
-                      <button
-                        type="button"
-                        onClick={() => setFormData(prev => ({ ...prev, paymentMethod: 'credit' }))}
-                        className={`w-full p-4 rounded-2xl border-2 transition-all duration-300 ${
-                          formData.paymentMethod === 'credit'
-                            ? 'border-[#d4af37] bg-[#d4af37]/20'
-                            : 'border-white/20 bg-white/5 hover:border-white/40'
-                        }`}
-                      >
-                        <div className="text-white font-semibold">クレジットカード</div>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setFormData(prev => ({ ...prev, paymentMethod: 'bank' }))}
-                        className={`w-full p-4 rounded-2xl border-2 transition-all duration-300 ${
-                          formData.paymentMethod === 'bank'
-                            ? 'border-[#d4af37] bg-[#d4af37]/20'
-                            : 'border-white/20 bg-white/5 hover:border-white/40'
-                        }`}
-                      >
-                        <div className="text-white font-semibold">銀行振込（請求書対応可）</div>
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="bg-[#d4af37]/10 border border-[#d4af37]/30 rounded-2xl p-6">
-                    <p className="text-white/80 text-sm leading-relaxed">
-                      {formData.paymentMethod === 'credit'
-                        ? 'クレジットカード情報は次のステップで入力していただきます。'
-                        : '請求書は登録いただいたメールアドレスに送付されます。振込手数料はお客様負担となります。'}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Step 4: Confirmation */}
-              {currentStep === 4 && (
-                <div className="space-y-6">
-                  <h2 className="text-2xl font-bold text-white mb-6">最終確認</h2>
-
-                  <div className="space-y-4">
-                    <div className="bg-white/5 rounded-2xl p-6">
-                      <h3 className="text-[#d4af37] font-semibold mb-4">申込情報</h3>
-                      <dl className="space-y-3 text-sm">
-                        <div className="flex justify-between">
-                          <dt className="text-white/60">申込種別</dt>
-                          <dd className="text-white font-semibold">
-                            {formData.applicantType === 'individual' ? '個人' : '法人'}
-                          </dd>
-                        </div>
-                        <div className="flex justify-between">
-                          <dt className="text-white/60">氏名</dt>
-                          <dd className="text-white font-semibold">{formData.fullName}</dd>
-                        </div>
-                        <div className="flex justify-between">
-                          <dt className="text-white/60">メールアドレス</dt>
-                          <dd className="text-white font-semibold">{formData.email}</dd>
-                        </div>
-                        <div className="flex justify-between">
-                          <dt className="text-white/60">電話番号</dt>
-                          <dd className="text-white font-semibold">{formData.phone}</dd>
-                        </div>
-                      </dl>
-                    </div>
-
-                    <div className="bg-white/5 rounded-2xl p-6">
-                      <h3 className="text-[#d4af37] font-semibold mb-4">プラン情報</h3>
-                      <dl className="space-y-3 text-sm">
-                        <div className="flex justify-between">
-                          <dt className="text-white/60">回線数</dt>
-                          <dd className="text-white font-semibold">{formData.lineCount}回線</dd>
-                        </div>
-                        <div className="flex justify-between">
-                          <dt className="text-white/60">データプラン</dt>
-                          <dd className="text-white font-semibold">{formData.plan}</dd>
-                        </div>
-                        <div className="flex justify-between">
-                          <dt className="text-white/60">通話オプション</dt>
-                          <dd className="text-white font-semibold">
-                            {formData.callOption === 'none' && 'なし'}
-                            {formData.callOption === '5min' && '5分かけ放題'}
-                            {formData.callOption === '10min' && '10分かけ放題'}
-                            {formData.callOption === 'unlimited' && '完全かけ放題'}
-                          </dd>
-                        </div>
-                        <div className="flex justify-between">
-                          <dt className="text-white/60">支払い方法</dt>
-                          <dd className="text-white font-semibold">
-                            {formData.paymentMethod === 'credit' ? 'クレジットカード' : '銀行振込'}
-                          </dd>
-                        </div>
-                      </dl>
-                    </div>
-
-                    <div className="bg-[#d4af37]/10 border border-[#d4af37]/30 rounded-2xl p-6">
-                      <h3 className="text-[#d4af37] font-semibold mb-2">初期費用（3ヶ月パック）</h3>
-                      <div className="text-3xl font-bold text-white">
-                        ¥{parseInt(formData.lineCount) >= 50 ? '4,200' : '4,600'}
-                        <span className="text-lg text-white/60"> / 回線</span>
-                      </div>
-                      <p className="text-white/60 text-sm mt-2">
-                        合計: ¥{(parseInt(formData.lineCount) * (parseInt(formData.lineCount) >= 50 ? 4200 : 4600)).toLocaleString()}
-                      </p>
-                    </div>
-
-                    <div className="bg-white/5 rounded-2xl p-6">
-                      <label className="flex items-start cursor-pointer">
+                        <label className="block text-white/80 mb-2">住所<span className="text-red-400">*</span></label>
                         <input
-                          type="checkbox"
-                          className="mt-1 w-5 h-5 rounded border-white/20 bg-white/10 text-[#d4af37] focus:ring-[#d4af37]"
+                          type="text"
+                          value={formData.address}
+                          onChange={(e) => updateFormData({ address: e.target.value })}
+                          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
+                          placeholder="東京都千代田区..."
                           required
                         />
-                        <span className="ml-3 text-white/80 text-sm leading-relaxed">
-                          <Link href="/terms" className="text-[#d4af37] hover:underline">
-                            利用規約
-                          </Link>
-                          、
-                          <Link href="/privacy" className="text-[#d4af37] hover:underline">
-                            プライバシーポリシー
-                          </Link>
-                          、
-                          <Link href="/legal" className="text-[#d4af37] hover:underline">
-                            特定商取引法表示
-                          </Link>
-                          に同意します
-                        </span>
-                      </label>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
-
-              {/* Navigation Buttons */}
-              <div className="flex gap-4 mt-8">
-                {currentStep > 1 && (
-                  <button
-                    type="button"
-                    onClick={prevStep}
-                    className="flex-1 px-6 py-3 bg-white/10 border border-white/20 text-white font-semibold rounded-full hover:bg-white/20 transition-all duration-300"
-                  >
-                    戻る
-                  </button>
                 )}
-                {currentStep < 4 ? (
+
+                <div className="mt-8">
                   <button
-                    type="button"
                     onClick={nextStep}
-                    className="flex-1 px-6 py-3 bg-gradient-to-r from-[#d4af37] to-[#f0d970] text-black font-bold rounded-full hover:shadow-xl hover:shadow-[#d4af37]/50 transition-all duration-300"
+                    disabled={!isStep1Valid()}
+                    className={`w-full py-4 rounded-xl font-bold text-lg transition-all duration-300 ${
+                      isStep1Valid()
+                        ? 'bg-gradient-to-r from-[#d4af37] to-[#f0d970] text-black hover:shadow-xl hover:shadow-[#d4af37]/20'
+                        : 'bg-white/10 text-white/40 cursor-not-allowed'
+                    }`}
                   >
                     次へ
                   </button>
-                ) : (
-                  <button
-                    type="submit"
-                    className="flex-1 px-6 py-3 bg-gradient-to-r from-[#d4af37] to-[#f0d970] text-black font-bold rounded-full hover:shadow-xl hover:shadow-[#d4af37]/50 transition-all duration-300"
-                  >
-                    申し込む
-                  </button>
-                )}
+                </div>
               </div>
-            </div>
-          </form>
+            )}
+
+            {/* ステップ2: プラン選択 */}
+            {currentStep === 2 && (
+              <div>
+                <h2 className="text-2xl font-bold text-white mb-6">プラン選択</h2>
+
+                <div className="space-y-6">
+                  {/* 3ヶ月パック選択 */}
+                  <div>
+                    <h3 className="text-xl font-semibold text-white mb-4">3ヶ月パック</h3>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                      <button
+                        type="button"
+                        onClick={() => updateFormData({ planType: '3month-50plus', lineCount: 50 })}
+                        className={`p-6 rounded-2xl border-2 transition-all duration-300 text-left ${
+                          formData.planType === '3month-50plus'
+                            ? 'border-[#d4af37] bg-[#d4af37]/20'
+                            : 'border-white/20 bg-white/5 hover:border-white/40'
+                        }`}
+                      >
+                        <div className="text-lg font-bold text-white mb-2">50回線以上</div>
+                        <div className="text-3xl font-bold text-[#d4af37] mb-2">¥4,200<span className="text-lg text-white/60">/回線</span></div>
+                        <div className="text-sm text-white/60">税込</div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => updateFormData({ planType: '3month-under50', lineCount: 1 })}
+                        className={`p-6 rounded-2xl border-2 transition-all duration-300 text-left ${
+                          formData.planType === '3month-under50'
+                            ? 'border-[#d4af37] bg-[#d4af37]/20'
+                            : 'border-white/20 bg-white/5 hover:border-white/40'
+                        }`}
+                      >
+                        <div className="text-lg font-bold text-white mb-2">50回線未満</div>
+                        <div className="text-3xl font-bold text-[#d4af37] mb-2">¥4,600<span className="text-lg text-white/60">/回線</span></div>
+                        <div className="text-sm text-white/60">税込</div>
+                      </button>
+                    </div>
+
+                    {/* 回線数入力 */}
+                    {formData.planType && (
+                      <div className="mt-6">
+                        <label className="block text-white/80 mb-2">
+                          回線数<span className="text-red-400">*</span>
+                          {formData.planType === '3month-50plus' && (
+                            <span className="text-sm text-white/60 ml-2">（50回線以上で入力してください）</span>
+                          )}
+                          {formData.planType === '3month-under50' && (
+                            <span className="text-sm text-white/60 ml-2">（50回線未満で入力してください）</span>
+                          )}
+                        </label>
+                        <input
+                          type="number"
+                          value={formData.lineCount || ''}
+                          onChange={(e) => updateFormData({ lineCount: parseInt(e.target.value) || 0 })}
+                          min={formData.planType === '3month-50plus' ? 50 : 1}
+                          max={formData.planType === '3month-under50' ? 49 : undefined}
+                          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
+                          placeholder="回線数を入力"
+                          required
+                        />
+                      </div>
+                    )}
+
+                    {/* 合計金額表示 */}
+                    {formData.planType && formData.lineCount && formData.lineCount > 0 && (
+                      <div className="mt-6 p-6 bg-[#d4af37]/10 border border-[#d4af37]/30 rounded-2xl">
+                        <div className="text-center">
+                          <div className="text-white/80 mb-2">合計金額</div>
+                          <div className="text-3xl font-bold text-[#d4af37] mb-2">
+                            {formData.lineCount}回線 × ¥{PLAN_PRICES[formData.planType].toLocaleString()} = ¥{(formData.lineCount * PLAN_PRICES[formData.planType]).toLocaleString()}
+                          </div>
+                          <div className="text-sm text-white/60">※事務手数料込み</div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mt-8 flex gap-4">
+                  <button
+                    onClick={prevStep}
+                    className="flex-1 py-4 rounded-xl font-bold text-lg bg-white/10 text-white hover:bg-white/20 transition-all duration-300"
+                  >
+                    戻る
+                  </button>
+                  <button
+                    onClick={nextStep}
+                    disabled={!isStep2Valid()}
+                    className={`flex-1 py-4 rounded-xl font-bold text-lg transition-all duration-300 ${
+                      isStep2Valid()
+                        ? 'bg-gradient-to-r from-[#d4af37] to-[#f0d970] text-black hover:shadow-xl hover:shadow-[#d4af37]/20'
+                        : 'bg-white/10 text-white/40 cursor-not-allowed'
+                    }`}
+                  >
+                    次へ
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ステップ3: 書類アップロード */}
+            {currentStep === 3 && (
+              <div>
+                <h2 className="text-2xl font-bold text-white mb-6">書類アップロード</h2>
+
+                <div className="space-y-6">
+                  {/* 身分証明書（表） */}
+                  <div>
+                    <label className="block text-white/80 mb-2">
+                      身分証明書（表）<span className="text-red-400">*</span>
+                    </label>
+                    <div className="border-2 border-dashed border-white/20 rounded-xl p-6 text-center hover:border-[#d4af37]/50 transition-colors">
+                      {formData.idCardFrontUrl ? (
+                        <div>
+                          <div className="text-[#d4af37] mb-2">✓ アップロード完了</div>
+                          <button
+                            type="button"
+                            onClick={() => updateFormData({ idCardFrontUrl: '' })}
+                            className="text-sm text-white/60 hover:text-white"
+                          >
+                            削除して再アップロード
+                          </button>
+                        </div>
+                      ) : (
+                        <div>
+                          <input
+                            type="file"
+                            accept="image/*,.pdf"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0]
+                              if (file) handleFileUpload(file, 'idCardFrontUrl')
+                            }}
+                            className="hidden"
+                            id="idCardFront"
+                          />
+                          <label
+                            htmlFor="idCardFront"
+                            className="cursor-pointer inline-block px-6 py-3 bg-white/10 text-white rounded-xl hover:bg-white/20 transition-colors"
+                          >
+                            {uploadingFile === 'idCardFrontUrl' ? 'アップロード中...' : 'ファイルを選択'}
+                          </label>
+                          <div className="text-sm text-white/60 mt-2">JPEG, PNG, PDF（最大10MB）</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 身分証明書（裏） */}
+                  <div>
+                    <label className="block text-white/80 mb-2">
+                      身分証明書（裏）<span className="text-red-400">*</span>
+                    </label>
+                    <div className="border-2 border-dashed border-white/20 rounded-xl p-6 text-center hover:border-[#d4af37]/50 transition-colors">
+                      {formData.idCardBackUrl ? (
+                        <div>
+                          <div className="text-[#d4af37] mb-2">✓ アップロード完了</div>
+                          <button
+                            type="button"
+                            onClick={() => updateFormData({ idCardBackUrl: '' })}
+                            className="text-sm text-white/60 hover:text-white"
+                          >
+                            削除して再アップロード
+                          </button>
+                        </div>
+                      ) : (
+                        <div>
+                          <input
+                            type="file"
+                            accept="image/*,.pdf"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0]
+                              if (file) handleFileUpload(file, 'idCardBackUrl')
+                            }}
+                            className="hidden"
+                            id="idCardBack"
+                          />
+                          <label
+                            htmlFor="idCardBack"
+                            className="cursor-pointer inline-block px-6 py-3 bg-white/10 text-white rounded-xl hover:bg-white/20 transition-colors"
+                          >
+                            {uploadingFile === 'idCardBackUrl' ? 'アップロード中...' : 'ファイルを選択'}
+                          </label>
+                          <div className="text-sm text-white/60 mt-2">JPEG, PNG, PDF（最大10MB）</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 登記簿謄本（法人のみ） */}
+                  {formData.applicantType === 'corporate' && (
+                    <div>
+                      <label className="block text-white/80 mb-2">
+                        登記簿謄本（3ヶ月以内発行）<span className="text-red-400">*</span>
+                      </label>
+                      <div className="border-2 border-dashed border-white/20 rounded-xl p-6 text-center hover:border-[#d4af37]/50 transition-colors">
+                        {formData.registrationUrl ? (
+                          <div>
+                            <div className="text-[#d4af37] mb-2">✓ アップロード完了</div>
+                            <button
+                              type="button"
+                              onClick={() => updateFormData({ registrationUrl: '' })}
+                              className="text-sm text-white/60 hover:text-white"
+                            >
+                              削除して再アップロード
+                            </button>
+                          </div>
+                        ) : (
+                          <div>
+                            <input
+                              type="file"
+                              accept=".pdf"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0]
+                                if (file) handleFileUpload(file, 'registrationUrl')
+                              }}
+                              className="hidden"
+                              id="registration"
+                            />
+                            <label
+                              htmlFor="registration"
+                              className="cursor-pointer inline-block px-6 py-3 bg-white/10 text-white rounded-xl hover:bg-white/20 transition-colors"
+                            >
+                              {uploadingFile === 'registrationUrl' ? 'アップロード中...' : 'ファイルを選択'}
+                            </label>
+                            <div className="text-sm text-white/60 mt-2">PDF（最大10MB）</div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-8 flex gap-4">
+                  <button
+                    onClick={prevStep}
+                    className="flex-1 py-4 rounded-xl font-bold text-lg bg-white/10 text-white hover:bg-white/20 transition-all duration-300"
+                  >
+                    戻る
+                  </button>
+                  <button
+                    onClick={nextStep}
+                    disabled={!isStep3Valid()}
+                    className={`flex-1 py-4 rounded-xl font-bold text-lg transition-all duration-300 ${
+                      isStep3Valid()
+                        ? 'bg-gradient-to-r from-[#d4af37] to-[#f0d970] text-black hover:shadow-xl hover:shadow-[#d4af37]/20'
+                        : 'bg-white/10 text-white/40 cursor-not-allowed'
+                    }`}
+                  >
+                    次へ
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ステップ4: 確認画面 */}
+            {currentStep === 4 && (
+              <div>
+                <h2 className="text-2xl font-bold text-white mb-6">申し込み内容の確認</h2>
+
+                {/* 申し込み内容表示 */}
+                <div className="space-y-6 mb-8">
+                  {/* 個人情報 */}
+                  <div className="bg-white/5 rounded-xl p-6">
+                    <h3 className="text-lg font-bold text-[#d4af37] mb-4">個人情報</h3>
+                    <div className="space-y-2 text-white/80">
+                      {formData.applicantType === 'individual' ? (
+                        <>
+                          <div className="flex justify-between py-2 border-b border-white/10">
+                            <span className="text-white/60">氏名</span>
+                            <span>{formData.lastName} {formData.firstName} ({formData.lastNameKana} {formData.firstNameKana})</span>
+                          </div>
+                          <div className="flex justify-between py-2 border-b border-white/10">
+                            <span className="text-white/60">生年月日</span>
+                            <span>{formData.dateOfBirth}</span>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="flex justify-between py-2 border-b border-white/10">
+                            <span className="text-white/60">会社名</span>
+                            <span>{formData.companyName} ({formData.companyNameKana})</span>
+                          </div>
+                          <div className="flex justify-between py-2 border-b border-white/10">
+                            <span className="text-white/60">法人番号</span>
+                            <span>{formData.corporateNumber}</span>
+                          </div>
+                          <div className="flex justify-between py-2 border-b border-white/10">
+                            <span className="text-white/60">代表者</span>
+                            <span>{formData.representativeLastName} {formData.representativeFirstName}</span>
+                          </div>
+                          <div className="flex justify-between py-2 border-b border-white/10">
+                            <span className="text-white/60">担当者</span>
+                            <span>{formData.contactLastName} {formData.contactFirstName}</span>
+                          </div>
+                        </>
+                      )}
+                      <div className="flex justify-between py-2 border-b border-white/10">
+                        <span className="text-white/60">電話番号</span>
+                        <span>{formData.phone}</span>
+                      </div>
+                      <div className="flex justify-between py-2 border-b border-white/10">
+                        <span className="text-white/60">メールアドレス</span>
+                        <span>{formData.email}</span>
+                      </div>
+                      <div className="flex justify-between py-2">
+                        <span className="text-white/60">住所</span>
+                        <span>〒{formData.postalCode} {formData.address}</span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setCurrentStep(1)}
+                      className="mt-4 text-[#d4af37] hover:text-[#f0d970] text-sm"
+                    >
+                      修正する
+                    </button>
+                  </div>
+
+                  {/* プラン情報 */}
+                  <div className="bg-white/5 rounded-xl p-6">
+                    <h3 className="text-lg font-bold text-[#d4af37] mb-4">プラン情報</h3>
+                    <div className="space-y-2 text-white/80">
+                      <div className="flex justify-between py-2 border-b border-white/10">
+                        <span className="text-white/60">プラン</span>
+                        <span>{formData.planType === '3month-50plus' ? '3ヶ月パック（50回線以上）' : '3ヶ月パック（50回線未満）'}</span>
+                      </div>
+                      <div className="flex justify-between py-2 border-b border-white/10">
+                        <span className="text-white/60">回線数</span>
+                        <span>{formData.lineCount}回線</span>
+                      </div>
+                      <div className="flex justify-between py-2 text-xl font-bold">
+                        <span className="text-white">合計金額</span>
+                        <span className="text-[#d4af37]">¥{formData.planType && formData.lineCount ? (PLAN_PRICES[formData.planType] * formData.lineCount).toLocaleString() : 0}</span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setCurrentStep(2)}
+                      className="mt-4 text-[#d4af37] hover:text-[#f0d970] text-sm"
+                    >
+                      修正する
+                    </button>
+                  </div>
+
+                  {/* 書類 */}
+                  <div className="bg-white/5 rounded-xl p-6">
+                    <h3 className="text-lg font-bold text-[#d4af37] mb-4">アップロード書類</h3>
+                    <div className="space-y-2 text-white/80">
+                      <div className="flex justify-between py-2 border-b border-white/10">
+                        <span className="text-white/60">身分証明書（表）</span>
+                        <span className="text-[#d4af37]">✓ アップロード済み</span>
+                      </div>
+                      <div className="flex justify-between py-2 border-b border-white/10">
+                        <span className="text-white/60">身分証明書（裏）</span>
+                        <span className="text-[#d4af37]">✓ アップロード済み</span>
+                      </div>
+                      {formData.applicantType === 'corporate' && formData.registrationUrl && (
+                        <div className="flex justify-between py-2">
+                          <span className="text-white/60">登記簿謄本</span>
+                          <span className="text-[#d4af37]">✓ アップロード済み</span>
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => setCurrentStep(3)}
+                      className="mt-4 text-[#d4af37] hover:text-[#f0d970] text-sm"
+                    >
+                      修正する
+                    </button>
+                  </div>
+                </div>
+
+                {/* 同意チェックボックス */}
+                <div className="space-y-4 mb-8">
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={formData.agreePrivacy || false}
+                      onChange={(e) => updateFormData({ agreePrivacy: e.target.checked })}
+                      className="mt-1 w-5 h-5 rounded border-white/20 bg-white/10 text-[#d4af37] focus:ring-[#d4af37]"
+                    />
+                    <span className="text-white/80 group-hover:text-white">
+                      <a href="/privacy" target="_blank" className="text-[#d4af37] hover:underline">プライバシーポリシー</a>に同意します
+                    </span>
+                  </label>
+
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={formData.agreeTerms || false}
+                      onChange={(e) => updateFormData({ agreeTerms: e.target.checked })}
+                      className="mt-1 w-5 h-5 rounded border-white/20 bg-white/10 text-[#d4af37] focus:ring-[#d4af37]"
+                    />
+                    <span className="text-white/80 group-hover:text-white">
+                      <a href="/terms" target="_blank" className="text-[#d4af37] hover:underline">利用規約</a>に同意します
+                    </span>
+                  </label>
+
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={formData.agreeTelecom || false}
+                      onChange={(e) => updateFormData({ agreeTelecom: e.target.checked })}
+                      className="mt-1 w-5 h-5 rounded border-white/20 bg-white/10 text-[#d4af37] focus:ring-[#d4af37]"
+                    />
+                    <span className="text-white/80 group-hover:text-white">
+                      電気通信事業法約款に同意します
+                    </span>
+                  </label>
+
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={formData.agreeWithdrawal || false}
+                      onChange={(e) => updateFormData({ agreeWithdrawal: e.target.checked })}
+                      className="mt-1 w-5 h-5 rounded border-white/20 bg-white/10 text-[#d4af37] focus:ring-[#d4af37]"
+                    />
+                    <span className="text-white/80 group-hover:text-white">
+                      初期契約解除制度を確認しました
+                    </span>
+                  </label>
+
+                  <label className="flex items-start gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={formData.agreeNoAntisocial || false}
+                      onChange={(e) => updateFormData({ agreeNoAntisocial: e.target.checked })}
+                      className="mt-1 w-5 h-5 rounded border-white/20 bg-white/10 text-[#d4af37] focus:ring-[#d4af37]"
+                    />
+                    <span className="text-white/80 group-hover:text-white">
+                      反社会的勢力ではないことを表明し確約します
+                    </span>
+                  </label>
+                </div>
+
+                <div className="mt-8 flex gap-4">
+                  <button
+                    onClick={prevStep}
+                    className="flex-1 py-4 rounded-xl font-bold text-lg bg-white/10 text-white hover:bg-white/20 transition-all duration-300"
+                  >
+                    戻る
+                  </button>
+                  <button
+                    onClick={handleFinalSubmit}
+                    disabled={!isStep4Valid() || isSubmitting}
+                    className={`flex-1 py-4 rounded-xl font-bold text-lg transition-all duration-300 ${
+                      isStep4Valid() && !isSubmitting
+                        ? 'bg-gradient-to-r from-[#d4af37] to-[#f0d970] text-black hover:shadow-xl hover:shadow-[#d4af37]/20'
+                        : 'bg-white/10 text-white/40 cursor-not-allowed'
+                    }`}
+                  >
+                    {isSubmitting ? '送信中...' : '申し込む'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ステップ5: 完了メッセージ */}
+            {currentStep === 5 && (
+              <div className="text-center py-12">
+                <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-[#d4af37] to-[#f0d970] rounded-full flex items-center justify-center">
+                  <svg className="w-12 h-12 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+
+                <h2 className="text-3xl font-bold text-white mb-4">申し込みが完了しました</h2>
+
+                <p className="text-xl text-white/80 mb-8">
+                  ありがとうございます。<br />
+                  2営業日以内で請求書と申し込み確認のご連絡をさせていただきます。
+                </p>
+
+                <a
+                  href="/"
+                  className="inline-block px-8 py-4 bg-gradient-to-r from-[#d4af37] to-[#f0d970] text-black font-bold rounded-xl hover:shadow-xl hover:shadow-[#d4af37]/20 transition-all duration-300"
+                >
+                  トップページに戻る
+                </a>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
       <Footer />
     </div>
-  );
-}
-
-export default function ApplyPage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-white">読み込み中...</div>
-      </div>
-    }>
-      <ApplyForm />
-    </Suspense>
-  );
+  )
 }
