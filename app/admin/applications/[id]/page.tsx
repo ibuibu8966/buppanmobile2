@@ -81,14 +81,46 @@ export default function ApplicationDetailPage() {
         throw new Error('Failed to fetch application')
       }
       const data = await response.json()
-      setApplication(data.application)
-      setComment1(data.application.comment1 || '')
-      setComment2(data.application.comment2 || '')
+      const app = data.application
+
+      // 申込回線数と実際の回線数を比較して、不足している場合は自動作成
+      const currentLineCount = app.lines?.length || 0
+      const requiredLineCount = app.lineCount
+
+      if (currentLineCount < requiredLineCount) {
+        const linesToCreate = requiredLineCount - currentLineCount
+        await createInitialLines(app.id, linesToCreate)
+        // 再取得して最新の状態を取得
+        const updatedResponse = await fetch(`/api/admin/applications/${id}`)
+        const updatedData = await updatedResponse.json()
+        setApplication(updatedData.application)
+        setComment1(updatedData.application.comment1 || '')
+        setComment2(updatedData.application.comment2 || '')
+      } else {
+        setApplication(app)
+        setComment1(app.comment1 || '')
+        setComment2(app.comment2 || '')
+      }
     } catch (error) {
       console.error('申し込み詳細の取得エラー:', error)
       alert('申し込み詳細の取得に失敗しました')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const createInitialLines = async (applicationId: string, count: number) => {
+    try {
+      const promises = Array.from({ length: count }).map(() =>
+        fetch('/api/admin/lines', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ applicationId }),
+        })
+      )
+      await Promise.all(promises)
+    } catch (error) {
+      console.error('初期回線作成エラー:', error)
     }
   }
 
@@ -165,45 +197,6 @@ export default function ApplicationDetailPage() {
     }
   }
 
-  const handleAddLine = async () => {
-    try {
-      const response = await fetch('/api/admin/lines', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ applicationId: id }),
-      })
-
-      if (response.ok) {
-        fetchApplication()
-      } else {
-        alert('回線の追加に失敗しました')
-      }
-    } catch (error) {
-      console.error('回線追加エラー:', error)
-      alert('回線の追加に失敗しました')
-    }
-  }
-
-  const handleDeleteLine = async (lineId: string) => {
-    if (!confirm('この回線を削除しますか？')) {
-      return
-    }
-
-    try {
-      const response = await fetch(`/api/admin/lines/${lineId}`, {
-        method: 'DELETE',
-      })
-
-      if (response.ok) {
-        fetchApplication()
-      } else {
-        alert('回線の削除に失敗しました')
-      }
-    } catch (error) {
-      console.error('回線削除エラー:', error)
-      alert('回線の削除に失敗しました')
-    }
-  }
 
   const getVerificationBadge = (status: string) => {
     const colors: Record<string, string> = {
@@ -475,14 +468,8 @@ export default function ApplicationDetailPage() {
 
         {/* 回線管理 */}
         <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex justify-between items-center mb-4">
+          <div className="mb-4">
             <h2 className="text-xl font-bold text-gray-900">回線管理</h2>
-            <button
-              onClick={handleAddLine}
-              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-            >
-              回線を追加
-            </button>
           </div>
 
           <div className="overflow-x-auto">
@@ -506,9 +493,6 @@ export default function ApplicationDetailPage() {
                   </th>
                   <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">
                     ステータス
-                  </th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">
-                    操作
                   </th>
                 </tr>
               </thead>
@@ -585,14 +569,6 @@ export default function ApplicationDetailPage() {
                         <option value="returned">返却済み</option>
                         <option value="canceled">解約</option>
                       </select>
-                    </td>
-                    <td className="px-3 py-2 text-sm border border-gray-300">
-                      <button
-                        onClick={() => handleDeleteLine(line.id)}
-                        className="text-red-600 hover:text-red-800"
-                      >
-                        削除
-                      </button>
                     </td>
                   </tr>
                 ))}
