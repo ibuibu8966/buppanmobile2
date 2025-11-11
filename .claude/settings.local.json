@@ -18,7 +18,8 @@
       "Bash(npx prisma db push:*)",
       "Bash(lsof:*)",
       "Bash(xargs kill:*)",
-      "Bash(npm run create-admin:*)"
+      "Bash(npm run create-admin:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []

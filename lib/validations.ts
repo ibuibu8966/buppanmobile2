@@ -9,8 +9,8 @@ export const step1IndividualSchema = z.object({
   firstNameKana: z.string().min(1, '名（カナ）を入力してください'),
   phone: z.string().regex(/^0\d{9,10}$/, '有効な電話番号を入力してください'),
   email: z.string().email('有効なメールアドレスを入力してください'),
-  postalCode: z.string().regex(/^\d{7}$/, '郵便番号は7桁の数字で入力してください'),
-  address: z.string().min(1, '住所を入力してください'),
+  representativePostalCode: z.string().regex(/^\d{7}$/, '郵便番号は7桁の数字で入力してください'),
+  representativeAddress: z.string().min(1, '住所を入力してください'),
   dateOfBirth: z.string().min(1, '生年月日を入力してください'),
 })
 
@@ -27,6 +27,8 @@ export const step1CorporateSchema = z.object({
   representativeLastNameKana: z.string().min(1, '代表者姓（カナ）を入力してください'),
   representativeFirstNameKana: z.string().min(1, '代表者名（カナ）を入力してください'),
   representativeBirthDate: z.string().min(1, '代表者生年月日を入力してください'),
+  representativePostalCode: z.string().regex(/^\d{7}$/, '代表者郵便番号は7桁の数字で入力してください'),
+  representativeAddress: z.string().min(1, '代表者住所を入力してください'),
   contactLastName: z.string().min(1, '担当者姓を入力してください'),
   contactFirstName: z.string().min(1, '担当者名を入力してください'),
   contactLastNameKana: z.string().min(1, '担当者姓（カナ）を入力してください'),
@@ -43,20 +45,10 @@ export const step1Schema = z.discriminatedUnion('applicantType', [
 // ステップ2: プラン選択のバリデーション
 export const step2Schema = z.object({
   planType: z.enum(['3month-50plus', '3month-under50'], {
-    required_error: 'プランを選択してください',
+    message: 'プランを選択してください',
   }),
   lineCount: z.number()
-    .min(1, '回線数は1以上で入力してください')
-    .refine((val, ctx) => {
-      const planType = (ctx as any)?.planType
-      if (planType === '3month-50plus' && val < 50) {
-        return false
-      }
-      if (planType === '3month-under50' && val >= 50) {
-        return false
-      }
-      return true
-    }, '選択したプランに合った回線数を入力してください'),
+    .min(1, '回線数は1以上で入力してください'),
 }).superRefine((data, ctx) => {
   if (data.planType === '3month-50plus' && data.lineCount < 50) {
     ctx.addIssue({
