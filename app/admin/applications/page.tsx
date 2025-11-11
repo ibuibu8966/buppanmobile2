@@ -41,6 +41,8 @@ interface Application {
   }
   lines?: Array<{
     lineStatus: string
+    shipmentDate?: string | null
+    returnDate?: string | null
   }>
 }
 
