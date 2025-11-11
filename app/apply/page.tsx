@@ -403,8 +403,8 @@ export default function ApplyPage() {
                       <label className="block text-white/80 mb-2">郵便番号<span className="text-red-400">*</span></label>
                       <input
                         type="text"
-                        value={formData.representativePostalCode || ''}
-                        onChange={(e) => updateFormData({ representativePostalCode: e.target.value })}
+                        value={formData.postalCode || ''}
+                        onChange={(e) => updateFormData({ postalCode: e.target.value })}
                         className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
                         placeholder="1234567"
                         maxLength={7}
@@ -416,8 +416,8 @@ export default function ApplyPage() {
                       <label className="block text-white/80 mb-2">住所<span className="text-red-400">*</span></label>
                       <input
                         type="text"
-                        value={formData.representativeAddress || ''}
-                        onChange={(e) => updateFormData({ representativeAddress: e.target.value })}
+                        value={formData.address || ''}
+                        onChange={(e) => updateFormData({ address: e.target.value })}
                         className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
                         placeholder="東京都渋谷区..."
                         required
