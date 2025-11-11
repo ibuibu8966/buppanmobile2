@@ -3,5 +3,6 @@
     "app/api/**/*.ts": {
       "includeFiles": "node_modules/.prisma/client/**"
     }
-  }
+  },
+  "outputDirectory": ".next"
 }

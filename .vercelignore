@@ -1,0 +1,3 @@
+# Vercelにアップロードしないファイル
+.env.local
+.env*.local
