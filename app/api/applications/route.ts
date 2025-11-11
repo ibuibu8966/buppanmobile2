@@ -100,11 +100,14 @@ export async function POST(request: NextRequest) {
       error = result.error
     } else {
       // 新規申し込みを作成
+      const now = new Date().toISOString()
       const insertData = {
         id: crypto.randomUUID(), // IDを明示的に生成
         ...processedData,
         status,
-        ...(status === 'submitted' && { submittedAt: new Date().toISOString() }),
+        createdAt: now,
+        updatedAt: now,
+        ...(status === 'submitted' && { submittedAt: now }),
       }
 
       const result = await supabase
