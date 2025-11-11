@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { createClient } from '@supabase/supabase-js'
 import { getAdminSession } from '@/lib/auth'
+
+// Supabaseクライアントを初期化
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 // PATCH: 回線を更新
 export async function PATCH(
@@ -23,23 +29,33 @@ export async function PATCH(
     // 日付フィールドの変換
     const data: any = { ...body }
     if (data.returnDate && typeof data.returnDate === 'string') {
-      data.returnDate = new Date(data.returnDate)
+      data.returnDate = new Date(data.returnDate).toISOString()
     }
     if (data.shipmentDate && typeof data.shipmentDate === 'string') {
-      data.shipmentDate = new Date(data.shipmentDate)
+      data.shipmentDate = new Date(data.shipmentDate).toISOString()
     }
 
-    const line = await prisma.line.update({
-      where: { id },
-      data: {
+    const { data: line, error } = await supabase
+      .from('Line')
+      .update({
         ...data,
-        updatedAt: new Date(),
-      },
-      include: {
-        simLocation: true,
-        spareTag: true,
-      },
-    })
+        updatedAt: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select(`
+        *,
+        simLocation:Tag!Line_simLocationId_fkey(*),
+        spareTag:Tag!Line_spareTagId_fkey(*)
+      `)
+      .single()
+
+    if (error) {
+      console.error('回線更新エラー:', error)
+      return NextResponse.json(
+        { error: '回線の更新に失敗しました', details: error.message },
+        { status: 500 }
+      )
+    }
 
     return NextResponse.json({
       success: true,
@@ -71,9 +87,18 @@ export async function DELETE(
 
     const { id } = await params
 
-    await prisma.line.delete({
-      where: { id },
-    })
+    const { error } = await supabase
+      .from('Line')
+      .delete()
+      .eq('id', id)
+
+    if (error) {
+      console.error('回線削除エラー:', error)
+      return NextResponse.json(
+        { error: '回線の削除に失敗しました', details: error.message },
+        { status: 500 }
+      )
+    }
 
     return NextResponse.json({
       success: true,

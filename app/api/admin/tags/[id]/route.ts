@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { createClient } from '@supabase/supabase-js'
 import { getAdminSession } from '@/lib/auth'
+
+// Supabaseクライアントを初期化
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 // PATCH: タグを更新
 export async function PATCH(
@@ -20,13 +26,23 @@ export async function PATCH(
     const { id } = await params
     const body = await request.json()
 
-    const tag = await prisma.tag.update({
-      where: { id },
-      data: {
+    const { data: tag, error } = await supabase
+      .from('Tag')
+      .update({
         ...body,
-        updatedAt: new Date(),
-      },
-    })
+        updatedAt: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) {
+      console.error('タグ更新エラー:', error)
+      return NextResponse.json(
+        { error: 'タグの更新に失敗しました', details: error.message },
+        { status: 500 }
+      )
+    }
 
     return NextResponse.json({
       success: true,
@@ -59,14 +75,19 @@ export async function DELETE(
     const { id } = await params
 
     // タグが使用されているかチェック
-    const [simLocationCount, spareTagCount] = await Promise.all([
-      prisma.line.count({
-        where: { simLocationId: id },
-      }),
-      prisma.line.count({
-        where: { spareTagId: id },
-      }),
+    const [simLocationResult, spareTagResult] = await Promise.all([
+      supabase
+        .from('Line')
+        .select('id', { count: 'exact', head: true })
+        .eq('simLocationId', id),
+      supabase
+        .from('Line')
+        .select('id', { count: 'exact', head: true })
+        .eq('spareTagId', id),
     ])
+
+    const simLocationCount = simLocationResult.count || 0
+    const spareTagCount = spareTagResult.count || 0
 
     if (simLocationCount > 0 || spareTagCount > 0) {
       return NextResponse.json(
@@ -75,9 +96,18 @@ export async function DELETE(
       )
     }
 
-    await prisma.tag.delete({
-      where: { id },
-    })
+    const { error } = await supabase
+      .from('Tag')
+      .delete()
+      .eq('id', id)
+
+    if (error) {
+      console.error('タグ削除エラー:', error)
+      return NextResponse.json(
+        { error: 'タグの削除に失敗しました', details: error.message },
+        { status: 500 }
+      )
+    }
 
     return NextResponse.json({
       success: true,

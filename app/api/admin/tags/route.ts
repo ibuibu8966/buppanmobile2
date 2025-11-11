@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { createClient } from '@supabase/supabase-js'
 import { getAdminSession } from '@/lib/auth'
+
+// Supabaseクライアントを初期化
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 // GET: タグ一覧を取得
 export async function GET(request: NextRequest) {
@@ -17,16 +23,26 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const type = searchParams.get('type') // 'sim_location' | 'spare' | null
 
-    const where = type ? { type } : {}
+    let query = supabase
+      .from('Tag')
+      .select('*')
+      .order('order', { ascending: true })
 
-    const tags = await prisma.tag.findMany({
-      where,
-      orderBy: {
-        order: 'asc',
-      },
-    })
+    if (type) {
+      query = query.eq('type', type)
+    }
 
-    return NextResponse.json({ tags })
+    const { data: tags, error } = await query
+
+    if (error) {
+      console.error('タグ一覧の取得エラー:', error)
+      return NextResponse.json(
+        { error: 'タグ一覧の取得に失敗しました', details: error.message },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({ tags: tags || [] })
   } catch (error) {
     console.error('タグ一覧の取得エラー:', error)
     return NextResponse.json(
@@ -52,9 +68,11 @@ export async function POST(request: NextRequest) {
     const { name, type, color, order } = body
 
     // 同じ名前のタグが既に存在するかチェック
-    const existing = await prisma.tag.findUnique({
-      where: { name },
-    })
+    const { data: existing } = await supabase
+      .from('Tag')
+      .select('*')
+      .eq('name', name)
+      .single()
 
     if (existing) {
       return NextResponse.json(
@@ -63,14 +81,27 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const tag = await prisma.tag.create({
-      data: {
+    const { data: tag, error } = await supabase
+      .from('Tag')
+      .insert({
+        id: crypto.randomUUID(),
         name,
         type,
         color: color || null,
         order: order || 0,
-      },
-    })
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error('タグ作成エラー:', error)
+      return NextResponse.json(
+        { error: 'タグの作成に失敗しました', details: error.message },
+        { status: 500 }
+      )
+    }
 
     return NextResponse.json({
       success: true,
