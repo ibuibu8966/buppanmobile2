@@ -1,63 +1,65 @@
-import { PrismaClient } from '@prisma/client'
+import { createClient } from '@supabase/supabase-js'
 import bcrypt from 'bcryptjs'
-import 'dotenv/config'
 
-const prisma = new PrismaClient()
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
-async function main() {
-  const email = process.env.ADMIN_EMAIL || 'admin@buppanmobile.com'
-  const password = process.env.ADMIN_PASSWORD || 'change_this_password_immediately'
-  const name = '管理者'
-
-  console.log('管理者アカウントを作成しています...')
-  console.log(`メールアドレス: ${email}`)
-
-  // 既存の管理者をチェック
-  const existingAdmin = await prisma.admin.findUnique({
-    where: { email },
-  })
-
-  if (existingAdmin) {
-    console.log('⚠️  このメールアドレスの管理者は既に存在します')
-
-    // パスワードを更新するか確認
-    console.log('パスワードを更新します...')
-
-    const hashedPassword = await bcrypt.hash(password, 10)
-
-    await prisma.admin.update({
-      where: { email },
-      data: { password: hashedPassword },
-    })
-
-    console.log('✅ パスワードを更新しました')
+async function createAdmin() {
+  const email = 'admin@buppanmobile.com'
+  const password = 'change_this_password_immediately'
+  const name = 'システム管理者'
+  
+  // パスワードをハッシュ化
+  const hashedPassword = await bcrypt.hash(password, 10)
+  
+  // 既存の管理者を確認
+  const { data: existing } = await supabase
+    .from('Admin')
+    .select('*')
+    .eq('email', email)
+    .single()
+  
+  if (existing) {
+    console.log('管理者アカウントは既に存在します')
+    // パスワードを更新
+    const { error } = await supabase
+      .from('Admin')
+      .update({
+        password: hashedPassword,
+        updatedAt: new Date().toISOString()
+      })
+      .eq('email', email)
+    
+    if (error) {
+      console.error('パスワード更新エラー:', error)
+    } else {
+      console.log('パスワードを更新しました')
+    }
     return
   }
-
+  
   // 新規管理者を作成
-  const hashedPassword = await bcrypt.hash(password, 10)
-
-  const admin = await prisma.admin.create({
-    data: {
+  const { data, error } = await supabase
+    .from('Admin')
+    .insert({
+      id: crypto.randomUUID(),
       email,
       password: hashedPassword,
       name,
-      role: 'admin',
-    },
-  })
-
-  console.log('✅ 管理者アカウントを作成しました')
-  console.log(`ID: ${admin.id}`)
-  console.log(`メールアドレス: ${admin.email}`)
-  console.log(`名前: ${admin.name}`)
-  console.log('\n⚠️  重要: 本番環境では必ずパスワードを変更してください!')
+      role: 'super_admin',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    })
+    .select()
+    .single()
+  
+  if (error) {
+    console.error('管理者作成エラー:', error)
+  } else {
+    console.log('管理者アカウントを作成しました:', data)
+  }
 }
 
-main()
-  .catch((e) => {
-    console.error('エラーが発生しました:', e)
-    process.exit(1)
-  })
-  .finally(async () => {
-    await prisma.$disconnect()
-  })
+createAdmin().catch(console.error)

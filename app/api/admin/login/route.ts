@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { createClient } from '@supabase/supabase-js'
 import bcrypt from 'bcryptjs'
 import { SignJWT } from 'jose'
+
+// Supabaseクライアントを初期化
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 const SECRET_KEY = new TextEncoder().encode(
   process.env.JWT_SECRET || 'your-secret-key-change-this-in-production'
@@ -21,11 +27,14 @@ export async function POST(request: NextRequest) {
     }
 
     // 管理者を検索
-    const admin = await prisma.admin.findUnique({
-      where: { email },
-    })
+    const { data: admin, error } = await supabase
+      .from('Admin')
+      .select('*')
+      .eq('email', email)
+      .single()
 
-    if (!admin) {
+    if (error || !admin) {
+      console.error('管理者検索エラー:', error)
       return NextResponse.json(
         { error: 'メールアドレスまたはパスワードが正しくありません' },
         { status: 401 }
@@ -42,10 +51,14 @@ export async function POST(request: NextRequest) {
     }
 
     // 最終ログイン日時を更新
-    await prisma.admin.update({
-      where: { id: admin.id },
-      data: { lastLoginAt: new Date() },
-    })
+    const { error: updateError } = await supabase
+      .from('Admin')
+      .update({ lastLoginAt: new Date().toISOString() })
+      .eq('id', admin.id)
+
+    if (updateError) {
+      console.error('最終ログイン日時の更新エラー:', updateError)
+    }
 
     // JWTトークンを生成
     const token = await new SignJWT({
