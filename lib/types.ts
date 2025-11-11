@@ -24,7 +24,7 @@ export type UpdateApplicationData = z.infer<typeof updateApplicationSchema>
 export type ApplicationStep = 1 | 2 | 3 | 4 | 5
 
 // 完全な申し込みデータ
-export interface CompleteApplicationData extends Step1Data, Step2Data, Step3Data {
+export type CompleteApplicationData = Step1Data & Step2Data & Step3Data & {
   totalAmount: number
 }
 
