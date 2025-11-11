@@ -200,7 +200,7 @@ export default function ApplyPage() {
         formData.lastName && formData.firstName &&
         formData.lastNameKana && formData.firstNameKana &&
         formData.phone && formData.email &&
-        formData.representativePostalCode && formData.representativeAddress && formData.dateOfBirth
+        formData.postalCode && formData.address && formData.dateOfBirth
       )
     } else {
       return !!(
