@@ -687,6 +687,13 @@ export default function ApplyPage() {
                 )}
 
                 <div className="mt-8">
+                  {!isStep1Valid() && (
+                    <div className="mb-4 p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
+                      <p className="text-red-400 text-sm">
+                        ※ 全ての必須項目（*）を入力してください
+                      </p>
+                    </div>
+                  )}
                   <button
                     onClick={nextStep}
                     disabled={!isStep1Valid()}
