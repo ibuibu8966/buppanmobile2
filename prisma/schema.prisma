@@ -39,6 +39,8 @@ model Application {
   representativeLastNameKana String?
   representativeFirstNameKana String?
   representativeBirthDate    DateTime?
+  representativePostalCode   String?
+  representativeAddress      String?
 
   // 担当者情報（法人のみ）
   contactLastName     String?

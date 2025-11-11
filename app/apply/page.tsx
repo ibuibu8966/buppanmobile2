@@ -24,6 +24,8 @@ type FormData = {
   representativeLastNameKana?: string
   representativeFirstNameKana?: string
   representativeBirthDate?: string
+  representativePostalCode?: string
+  representativeAddress?: string
   contactLastName?: string
   contactFirstName?: string
   contactLastNameKana?: string
@@ -198,7 +200,7 @@ export default function ApplyPage() {
         formData.lastName && formData.firstName &&
         formData.lastNameKana && formData.firstNameKana &&
         formData.phone && formData.email &&
-        formData.postalCode && formData.address && formData.dateOfBirth
+        formData.representativePostalCode && formData.representativeAddress && formData.dateOfBirth
       )
     } else {
       return !!(
@@ -208,6 +210,7 @@ export default function ApplyPage() {
         formData.representativeLastName && formData.representativeFirstName &&
         formData.representativeLastNameKana && formData.representativeFirstNameKana &&
         formData.representativeBirthDate &&
+        formData.representativePostalCode && formData.representativeAddress &&
         formData.contactLastName && formData.contactFirstName &&
         formData.contactLastNameKana && formData.contactFirstNameKana &&
         formData.postalCode && formData.address
@@ -400,8 +403,8 @@ export default function ApplyPage() {
                       <label className="block text-white/80 mb-2">郵便番号<span className="text-red-400">*</span></label>
                       <input
                         type="text"
-                        value={formData.postalCode}
-                        onChange={(e) => updateFormData({ postalCode: e.target.value })}
+                        value={formData.representativePostalCode || ''}
+                        onChange={(e) => updateFormData({ representativePostalCode: e.target.value })}
                         className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
                         placeholder="1234567"
                         maxLength={7}
@@ -413,8 +416,8 @@ export default function ApplyPage() {
                       <label className="block text-white/80 mb-2">住所<span className="text-red-400">*</span></label>
                       <input
                         type="text"
-                        value={formData.address}
-                        onChange={(e) => updateFormData({ address: e.target.value })}
+                        value={formData.representativeAddress || ''}
+                        onChange={(e) => updateFormData({ representativeAddress: e.target.value })}
                         className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
                         placeholder="東京都渋谷区..."
                         required
@@ -571,6 +574,31 @@ export default function ApplyPage() {
                           required
                         />
                       </div>
+
+                      <div className="mb-4">
+                        <label className="block text-white/80 mb-2">代表者郵便番号<span className="text-red-400">*</span></label>
+                        <input
+                          type="text"
+                          value={formData.representativePostalCode || ''}
+                          onChange={(e) => updateFormData({ representativePostalCode: e.target.value })}
+                          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
+                          placeholder="1234567"
+                          maxLength={7}
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-white/80 mb-2">代表者住所<span className="text-red-400">*</span></label>
+                        <input
+                          type="text"
+                          value={formData.representativeAddress || ''}
+                          onChange={(e) => updateFormData({ representativeAddress: e.target.value })}
+                          className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
+                          placeholder="東京都渋谷区..."
+                          required
+                        />
+                      </div>
                     </div>
 
                     <div className="border-t border-white/10 pt-6 mt-6">
@@ -628,10 +656,10 @@ export default function ApplyPage() {
                     </div>
 
                     <div className="border-t border-white/10 pt-6 mt-6">
-                      <h3 className="text-xl font-bold text-white mb-4">所在地情報</h3>
+                      <h3 className="text-xl font-bold text-white mb-4">法人所在地情報</h3>
 
                       <div className="mb-4">
-                        <label className="block text-white/80 mb-2">郵便番号<span className="text-red-400">*</span></label>
+                        <label className="block text-white/80 mb-2">法人郵便番号<span className="text-red-400">*</span></label>
                         <input
                           type="text"
                           value={formData.postalCode}
@@ -644,7 +672,7 @@ export default function ApplyPage() {
                       </div>
 
                       <div>
-                        <label className="block text-white/80 mb-2">住所<span className="text-red-400">*</span></label>
+                        <label className="block text-white/80 mb-2">法人住所<span className="text-red-400">*</span></label>
                         <input
                           type="text"
                           value={formData.address}

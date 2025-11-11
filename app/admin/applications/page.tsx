@@ -15,6 +15,8 @@ interface Application {
   companyNameKana?: string | null
   representativeLastName?: string | null
   representativeFirstName?: string | null
+  representativePostalCode?: string | null
+  representativeAddress?: string | null
   contactLastName?: string | null
   contactFirstName?: string | null
   email: string
@@ -152,6 +154,10 @@ export default function ApplicationsPage() {
     return app.lines.filter(line => line.shipmentDate).length
   }
 
+  const getUnshippedCount = (app: Application) => {
+    return app.lineCount - getShippedCount(app)
+  }
+
   const getReturnedCount = (app: Application) => {
     if (!app.lines) return 0
     return app.lines.filter(line => line.returnDate).length
@@ -208,8 +214,8 @@ export default function ApplicationsPage() {
           <table className="min-w-full border-collapse border border-gray-300">
               <thead>
                 <tr className="bg-gray-100">
-                  <th colSpan={9} className="px-3 py-2 text-center text-xs font-bold text-gray-800 border border-gray-300">個人情報/法人情報</th>
-                  <th colSpan={3} className="px-3 py-2 text-center text-xs font-bold text-gray-800 border border-gray-300">回線数</th>
+                  <th colSpan={11} className="px-3 py-2 text-center text-xs font-bold text-gray-800 border border-gray-300">個人情報/法人情報</th>
+                  <th colSpan={4} className="px-3 py-2 text-center text-xs font-bold text-gray-800 border border-gray-300">回線数</th>
                   <th colSpan={3} className="px-3 py-2 text-center text-xs font-bold text-gray-800 border border-gray-300">アップロード画像</th>
                   <th colSpan={2} className="px-3 py-2 text-center text-xs font-bold text-gray-800 border border-gray-300">ステータス</th>
                   <th colSpan={2} className="px-3 py-2 text-center text-xs font-bold text-gray-800 border border-gray-300">コメント</th>
@@ -221,12 +227,15 @@ export default function ApplicationsPage() {
                   <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">カナ</th>
                   <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">代表者名</th>
                   <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">担当者名</th>
-                  <th className="px-8 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">郵便番号</th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">住所</th>
+                  <th className="px-8 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">法人郵便番号</th>
+                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">法人住所</th>
+                  <th className="px-8 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">代表者郵便番号</th>
+                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">代表者住所</th>
                   <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">電話番号</th>
                   <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">メール</th>
                   <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">申込回線数</th>
                   <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">発送済</th>
+                  <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">未発送</th>
                   <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">返却済</th>
                   <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">身分証表</th>
                   <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">身分証裏</th>
@@ -278,17 +287,31 @@ export default function ApplicationsPage() {
                       </td>
                       <td
                         className="px-8 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300 cursor-pointer hover:bg-gray-100"
-                        onClick={() => handleCellClick(app.postalCode)}
+                        onClick={() => handleCellClick(app.applicantType === 'corporate' ? app.postalCode : '-')}
                         title="クリックして全文表示"
                       >
-                        {app.postalCode}
+                        {app.applicantType === 'corporate' ? app.postalCode : '-'}
                       </td>
                       <td
                         className="px-3 py-2 text-sm text-gray-900 max-w-xs truncate border border-gray-300 cursor-pointer hover:bg-gray-100"
-                        onClick={() => handleCellClick(app.address)}
+                        onClick={() => handleCellClick(app.applicantType === 'corporate' ? app.address : '-')}
                         title="クリックして全文表示"
                       >
-                        {app.address}
+                        {app.applicantType === 'corporate' ? app.address : '-'}
+                      </td>
+                      <td
+                        className="px-8 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300 cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleCellClick(app.representativePostalCode || '-')}
+                        title="クリックして全文表示"
+                      >
+                        {app.representativePostalCode || '-'}
+                      </td>
+                      <td
+                        className="px-3 py-2 text-sm text-gray-900 max-w-xs truncate border border-gray-300 cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleCellClick(app.representativeAddress || '-')}
+                        title="クリックして全文表示"
+                      >
+                        {app.representativeAddress || '-'}
                       </td>
                       <td
                         className="px-3 py-2 text-sm text-gray-900 max-w-xs truncate border border-gray-300 cursor-pointer hover:bg-gray-100"
@@ -309,6 +332,9 @@ export default function ApplicationsPage() {
                       </td>
                       <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300">
                         {getShippedCount(app)}回線
+                      </td>
+                      <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300">
+                        {getUnshippedCount(app)}回線
                       </td>
                       <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300">
                         {getReturnedCount(app)}回線
