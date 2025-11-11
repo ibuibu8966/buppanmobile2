@@ -5,6 +5,8 @@ const nextConfig: NextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['@prisma/client', 'prisma'],
   },
+  // Turbopack設定（空の設定でwebpackとの互換性を保つ）
+  turbopack: {},
   webpack: (config, { isServer }) => {
     if (isServer) {
       config.externals.push('@prisma/client');
