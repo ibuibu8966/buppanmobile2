@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { z } from 'zod'
+import { createClient } from '@supabase/supabase-js'
+
+// Supabaseクライアントを初期化
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 // GET: 申し込み情報を取得（draft状態のものを取得 - セッション復帰用）
 export async function GET(request: NextRequest) {
@@ -16,17 +21,21 @@ export async function GET(request: NextRequest) {
     }
 
     // 最新のdraft状態の申し込みを取得
-    const application = await prisma.application.findFirst({
-      where: {
-        email,
-        status: 'draft',
-      },
-      orderBy: {
-        updatedAt: 'desc',
-      },
-    })
+    const { data: application, error } = await supabase
+      .from('Application')
+      .select('*')
+      .eq('email', email)
+      .eq('status', 'draft')
+      .order('updatedAt', { ascending: false })
+      .limit(1)
+      .single()
 
-    return NextResponse.json({ application })
+    if (error && error.code !== 'PGRST116') {
+      // PGRST116は「レコードが見つからない」エラー
+      throw error
+    }
+
+    return NextResponse.json({ application: application || null })
   } catch (error) {
     console.error('申し込み情報の取得エラー:', error)
     return NextResponse.json(
@@ -49,17 +58,17 @@ export async function POST(request: NextRequest) {
 
     console.log('受信データ:', JSON.stringify(data, null, 2))
 
-    // 日付文字列をDateオブジェクトに変換
+    // 日付文字列をISO形式に変換
     const processedData: any = { ...data }
 
     if (processedData.dateOfBirth && typeof processedData.dateOfBirth === 'string') {
-      processedData.dateOfBirth = new Date(processedData.dateOfBirth)
+      processedData.dateOfBirth = new Date(processedData.dateOfBirth).toISOString()
     }
     if (processedData.establishedDate && typeof processedData.establishedDate === 'string') {
-      processedData.establishedDate = new Date(processedData.establishedDate)
+      processedData.establishedDate = new Date(processedData.establishedDate).toISOString()
     }
     if (processedData.representativeBirthDate && typeof processedData.representativeBirthDate === 'string') {
-      processedData.representativeBirthDate = new Date(processedData.representativeBirthDate)
+      processedData.representativeBirthDate = new Date(processedData.representativeBirthDate).toISOString()
     }
 
     // 必須フィールドのデフォルト値設定
@@ -69,27 +78,46 @@ export async function POST(request: NextRequest) {
 
     // ステップごとにデータを保存
     let application
+    let error
 
     if (id) {
       // 既存の申し込みを更新
-      application = await prisma.application.update({
-        where: { id },
-        data: {
-          ...processedData,
-          status,
-          updatedAt: new Date(),
-          ...(status === 'submitted' && { submittedAt: new Date() }),
-        },
-      })
+      const updateData = {
+        ...processedData,
+        status,
+        updatedAt: new Date().toISOString(),
+        ...(status === 'submitted' && { submittedAt: new Date().toISOString() }),
+      }
+
+      const result = await supabase
+        .from('Application')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single()
+
+      application = result.data
+      error = result.error
     } else {
       // 新規申し込みを作成
-      application = await prisma.application.create({
-        data: {
-          ...processedData,
-          status,
-          ...(status === 'submitted' && { submittedAt: new Date() }),
-        },
-      })
+      const insertData = {
+        ...processedData,
+        status,
+        ...(status === 'submitted' && { submittedAt: new Date().toISOString() }),
+      }
+
+      const result = await supabase
+        .from('Application')
+        .insert(insertData)
+        .select()
+        .single()
+
+      application = result.data
+      error = result.error
+    }
+
+    if (error) {
+      throw error
     }
 
     return NextResponse.json({
