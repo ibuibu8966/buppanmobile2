@@ -689,9 +689,46 @@ export default function ApplyPage() {
                 <div className="mt-8">
                   {!isStep1Valid() && (
                     <div className="mb-4 p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
-                      <p className="text-red-400 text-sm">
-                        ※ 全ての必須項目（*）を入力してください
+                      <p className="text-red-400 text-sm font-bold mb-2">
+                        ※ 以下の必須項目を入力してください：
                       </p>
+                      <ul className="text-red-400 text-xs space-y-1 ml-4">
+                        {formData.applicantType === 'individual' ? (
+                          <>
+                            {!formData.lastName && <li>・ 姓</li>}
+                            {!formData.firstName && <li>・ 名</li>}
+                            {!formData.lastNameKana && <li>・ 姓（カナ）</li>}
+                            {!formData.firstNameKana && <li>・ 名（カナ）</li>}
+                            {!formData.phone && <li>・ 電話番号</li>}
+                            {!formData.email && <li>・ メールアドレス</li>}
+                            {!formData.postalCode && <li>・ 郵便番号</li>}
+                            {!formData.address && <li>・ 住所</li>}
+                            {!formData.dateOfBirth && <li>・ 生年月日</li>}
+                          </>
+                        ) : (
+                          <>
+                            {!formData.companyName && <li>・ 会社名</li>}
+                            {!formData.companyNameKana && <li>・ 会社名（カナ）</li>}
+                            {!formData.corporateNumber && <li>・ 法人番号</li>}
+                            {!formData.establishedDate && <li>・ 設立年月日</li>}
+                            {!formData.phone && <li>・ 電話番号</li>}
+                            {!formData.email && <li>・ メールアドレス</li>}
+                            {!formData.representativeLastName && <li>・ 代表者姓</li>}
+                            {!formData.representativeFirstName && <li>・ 代表者名</li>}
+                            {!formData.representativeLastNameKana && <li>・ 代表者姓（カナ）</li>}
+                            {!formData.representativeFirstNameKana && <li>・ 代表者名（カナ）</li>}
+                            {!formData.representativeBirthDate && <li>・ 代表者生年月日</li>}
+                            {!formData.representativePostalCode && <li>・ 代表者郵便番号</li>}
+                            {!formData.representativeAddress && <li>・ 代表者住所</li>}
+                            {!formData.contactLastName && <li>・ 担当者姓</li>}
+                            {!formData.contactFirstName && <li>・ 担当者名</li>}
+                            {!formData.contactLastNameKana && <li>・ 担当者姓（カナ）</li>}
+                            {!formData.contactFirstNameKana && <li>・ 担当者名（カナ）</li>}
+                            {!formData.postalCode && <li>・ 郵便番号</li>}
+                            {!formData.address && <li>・ 住所</li>}
+                          </>
+                        )}
+                      </ul>
                     </div>
                   )}
                   <button
