@@ -101,6 +101,7 @@ export async function POST(request: NextRequest) {
     } else {
       // 新規申し込みを作成
       const insertData = {
+        id: crypto.randomUUID(), // IDを明示的に生成
         ...processedData,
         status,
         ...(status === 'submitted' && { submittedAt: new Date().toISOString() }),
