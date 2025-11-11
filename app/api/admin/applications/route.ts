@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { createClient } from '@supabase/supabase-js'
 import { getAdminSession } from '@/lib/auth'
+
+// Supabaseクライアントを初期化
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 // GET: 申し込み一覧を取得（管理者用）
 export async function GET(request: NextRequest) {
@@ -20,50 +26,52 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status') || 'all'
     const search = searchParams.get('search') || ''
 
-    const skip = (page - 1) * limit
+    const from = (page - 1) * limit
+    const to = from + limit - 1
 
-    // フィルター条件を構築
-    const where: any = {}
+    // クエリを構築
+    let query = supabase
+      .from('Application')
+      .select('*, Line(*)', { count: 'exact' })
+      .order('createdAt', { ascending: false })
+      .range(from, to)
 
     // ステータスフィルター
     if (status !== 'all') {
-      where.status = status
+      query = query.eq('status', status)
     }
 
     // 検索フィルター（名前、メール、電話番号で検索）
     if (search) {
-      where.OR = [
-        { lastName: { contains: search } },
-        { firstName: { contains: search } },
-        { companyName: { contains: search } },
-        { email: { contains: search } },
-        { phone: { contains: search } },
-      ]
+      query = query.or(
+        `lastName.ilike.%${search}%,firstName.ilike.%${search}%,companyName.ilike.%${search}%,email.ilike.%${search}%,phone.ilike.%${search}%`
+      )
     }
 
     // 申し込み一覧を取得
-    const [applications, total] = await Promise.all([
-      prisma.application.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: {
-          createdAt: 'desc',
-        },
-        include: {
-          lines: true,
-        },
-      }),
-      prisma.application.count({ where }),
-    ])
+    const { data: applications, count, error } = await query
+
+    if (error) {
+      console.error('申し込み一覧の取得エラー:', error)
+      return NextResponse.json(
+        { error: '申し込み一覧の取得に失敗しました', details: error.message },
+        { status: 500 }
+      )
+    }
+
+    // linesをLine配列に変換（Supabaseの結果をPrismaの形式に合わせる）
+    const formattedApplications = applications?.map((app: any) => ({
+      ...app,
+      lines: app.Line || [],
+    }))
 
     return NextResponse.json({
-      applications,
+      applications: formattedApplications || [],
       pagination: {
         page,
         limit,
-        total,
-        totalPages: Math.ceil(total / limit),
+        total: count || 0,
+        totalPages: Math.ceil((count || 0) / limit),
       },
     })
   } catch (error) {
