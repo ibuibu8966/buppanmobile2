@@ -32,6 +32,7 @@ interface Application {
   idCardFrontUrl?: string | null
   idCardBackUrl?: string | null
   registrationUrl?: string | null
+  expirationDate?: string | null
   comment1?: string | null
   comment2?: string | null
   createdAt: string
@@ -203,6 +204,15 @@ export default function ApplicationsPage() {
     setModalContent(null)
   }
 
+  const isExpired = (expirationDate: string | null | undefined) => {
+    if (!expirationDate) return false
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const expDate = new Date(expirationDate)
+    expDate.setHours(0, 0, 0, 0)
+    return expDate < today
+  }
+
   return (
     <div className="flex flex-col h-full">
 
@@ -213,135 +223,139 @@ export default function ApplicationsPage() {
         ) : applications.length === 0 ? (
           <div className="p-8 text-center text-gray-500">データがありません</div>
         ) : (
-          <table className="min-w-full border-collapse border border-gray-300">
+          <div className="overflow-x-auto">
+            <table className="min-w-full border-collapse border border-gray-300">
               <thead>
                 <tr className="bg-gray-100">
-                  <th colSpan={11} className="px-3 py-2 text-center text-xs font-bold text-gray-800 border border-gray-300">個人情報/法人情報</th>
-                  <th colSpan={4} className="px-3 py-2 text-center text-xs font-bold text-gray-800 border border-gray-300">回線数</th>
-                  <th colSpan={3} className="px-3 py-2 text-center text-xs font-bold text-gray-800 border border-gray-300">アップロード画像</th>
-                  <th colSpan={2} className="px-3 py-2 text-center text-xs font-bold text-gray-800 border border-gray-300">ステータス</th>
-                  <th colSpan={2} className="px-3 py-2 text-center text-xs font-bold text-gray-800 border border-gray-300">コメント</th>
-                  <th className="px-3 py-2 text-center text-xs font-bold text-gray-800 border border-gray-300">詳細</th>
+                  <th colSpan={11} className="px-2 py-1 text-center text-xs font-bold text-gray-800 border border-gray-300">個人情報/法人情報</th>
+                  <th colSpan={4} className="px-2 py-1 text-center text-xs font-bold text-gray-800 border border-gray-300">回線数</th>
+                  <th colSpan={3} className="px-2 py-1 text-center text-xs font-bold text-gray-800 border border-gray-300">アップロード画像</th>
+                  <th className="px-2 py-1 text-center text-xs font-bold text-gray-800 border border-gray-300">有効期限</th>
+                  <th colSpan={2} className="px-2 py-1 text-center text-xs font-bold text-gray-800 border border-gray-300">ステータス</th>
+                  <th colSpan={2} className="px-2 py-1 text-center text-xs font-bold text-gray-800 border border-gray-300">コメント</th>
+                  <th className="px-2 py-1 text-center text-xs font-bold text-gray-800 border border-gray-300">詳細</th>
                 </tr>
                 <tr className="bg-gray-50">
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">個人/法人</th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">名前/会社名</th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">カナ</th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">代表者名</th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">担当者名</th>
-                  <th className="px-8 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">法人郵便番号</th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">法人住所</th>
-                  <th className="px-8 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">代表者郵便番号</th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">代表者住所</th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">電話番号</th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">メール</th>
-                  <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">申込回線数</th>
-                  <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">発送済</th>
-                  <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">未発送</th>
-                  <th className="px-2 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">返却済</th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">身分証表</th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">身分証裏</th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">謄本</th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">本人確認</th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">決済確認</th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">コメント1</th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">コメント2</th>
-                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 border border-gray-300">詳細</th>
+                  <th className="px-2 py-1 text-left text-xs font-semibold text-gray-700 border border-gray-300">個人/法人</th>
+                  <th className="px-2 py-1 text-left text-xs font-semibold text-gray-700 border border-gray-300">名前/会社名</th>
+                  <th className="px-2 py-1 text-left text-xs font-semibold text-gray-700 border border-gray-300">カナ</th>
+                  <th className="px-2 py-1 text-left text-xs font-semibold text-gray-700 border border-gray-300">代表者名</th>
+                  <th className="px-2 py-1 text-left text-xs font-semibold text-gray-700 border border-gray-300">担当者名</th>
+                  <th className="px-2 py-1 text-left text-xs font-semibold text-gray-700 border border-gray-300">法人郵便番号</th>
+                  <th className="px-2 py-1 text-left text-xs font-semibold text-gray-700 border border-gray-300">法人住所</th>
+                  <th className="px-2 py-1 text-left text-xs font-semibold text-gray-700 border border-gray-300">代表者郵便番号</th>
+                  <th className="px-2 py-1 text-left text-xs font-semibold text-gray-700 border border-gray-300">代表者住所</th>
+                  <th className="px-2 py-1 text-left text-xs font-semibold text-gray-700 border border-gray-300">電話番号</th>
+                  <th className="px-2 py-1 text-left text-xs font-semibold text-gray-700 border border-gray-300">メール</th>
+                  <th className="px-2 py-1 text-left text-xs font-semibold text-gray-700 border border-gray-300">申込回線数</th>
+                  <th className="px-2 py-1 text-left text-xs font-semibold text-gray-700 border border-gray-300">発送済</th>
+                  <th className="px-2 py-1 text-left text-xs font-semibold text-gray-700 border border-gray-300">未発送</th>
+                  <th className="px-2 py-1 text-left text-xs font-semibold text-gray-700 border border-gray-300">返却済</th>
+                  <th className="px-2 py-1 text-left text-xs font-semibold text-gray-700 border border-gray-300">身分証表</th>
+                  <th className="px-2 py-1 text-left text-xs font-semibold text-gray-700 border border-gray-300">身分証裏</th>
+                  <th className="px-2 py-1 text-left text-xs font-semibold text-gray-700 border border-gray-300">謄本</th>
+                  <th className="px-2 py-1 text-left text-xs font-semibold text-gray-700 border border-gray-300">有効期限</th>
+                  <th className="px-2 py-1 text-left text-xs font-semibold text-gray-700 border border-gray-300">本人確認</th>
+                  <th className="px-2 py-1 text-left text-xs font-semibold text-gray-700 border border-gray-300">決済確認</th>
+                  <th className="px-2 py-1 text-left text-xs font-semibold text-gray-700 border border-gray-300">コメント1</th>
+                  <th className="px-2 py-1 text-left text-xs font-semibold text-gray-700 border border-gray-300">コメント2</th>
+                  <th className="px-2 py-1 text-left text-xs font-semibold text-gray-700 border border-gray-300">詳細</th>
                 </tr>
               </thead>
               <tbody className="bg-white">
                 {applications.map((app) => {
                   const verificationBadge = getVerificationBadge(app.verificationStatus)
                   const paymentBadge = getPaymentBadge(app.paymentStatus)
+                  const expired = isExpired(app.expirationDate)
 
                   return (
-                    <tr key={app.id} className="hover:bg-blue-50">
-                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300">
+                    <tr key={app.id} className={`hover:bg-blue-50 ${expired ? 'border-2 border-red-500' : ''}`}>
+                      <td className="px-2 py-1 whitespace-nowrap text-xs text-gray-900 border border-gray-300">
                         {app.applicantType === 'individual' ? '個人' : '法人'}
                       </td>
                       <td
-                        className="px-3 py-2 text-sm text-gray-900 max-w-xs truncate border border-gray-300 cursor-pointer hover:bg-gray-100"
+                        className="px-2 py-1 text-xs text-gray-900 max-w-xs truncate border border-gray-300 cursor-pointer hover:bg-gray-100"
                         onClick={() => handleCellClick(getApplicantName(app))}
                         title="クリックして全文表示"
                       >
                         {getApplicantName(app)}
                       </td>
                       <td
-                        className="px-3 py-2 text-sm text-gray-900 max-w-xs truncate border border-gray-300 cursor-pointer hover:bg-gray-100"
+                        className="px-2 py-1 text-xs text-gray-900 max-w-xs truncate border border-gray-300 cursor-pointer hover:bg-gray-100"
                         onClick={() => handleCellClick(getApplicantNameKana(app))}
                         title="クリックして全文表示"
                       >
                         {getApplicantNameKana(app)}
                       </td>
                       <td
-                        className="px-3 py-2 text-sm text-gray-900 max-w-xs truncate border border-gray-300 cursor-pointer hover:bg-gray-100"
+                        className="px-2 py-1 text-xs text-gray-900 max-w-xs truncate border border-gray-300 cursor-pointer hover:bg-gray-100"
                         onClick={() => handleCellClick(getRepresentativeName(app))}
                         title="クリックして全文表示"
                       >
                         {getRepresentativeName(app)}
                       </td>
                       <td
-                        className="px-3 py-2 text-sm text-gray-900 max-w-xs truncate border border-gray-300 cursor-pointer hover:bg-gray-100"
+                        className="px-2 py-1 text-xs text-gray-900 max-w-xs truncate border border-gray-300 cursor-pointer hover:bg-gray-100"
                         onClick={() => handleCellClick(getContactName(app))}
                         title="クリックして全文表示"
                       >
                         {getContactName(app)}
                       </td>
                       <td
-                        className="px-8 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300 cursor-pointer hover:bg-gray-100"
+                        className="px-2 py-1 whitespace-nowrap text-xs text-gray-900 border border-gray-300 cursor-pointer hover:bg-gray-100"
                         onClick={() => handleCellClick(app.applicantType === 'corporate' ? app.postalCode : '-')}
                         title="クリックして全文表示"
                       >
                         {app.applicantType === 'corporate' ? app.postalCode : '-'}
                       </td>
                       <td
-                        className="px-3 py-2 text-sm text-gray-900 max-w-xs truncate border border-gray-300 cursor-pointer hover:bg-gray-100"
+                        className="px-2 py-1 text-xs text-gray-900 max-w-xs truncate border border-gray-300 cursor-pointer hover:bg-gray-100"
                         onClick={() => handleCellClick(app.applicantType === 'corporate' ? app.address : '-')}
                         title="クリックして全文表示"
                       >
                         {app.applicantType === 'corporate' ? app.address : '-'}
                       </td>
                       <td
-                        className="px-8 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300 cursor-pointer hover:bg-gray-100"
+                        className="px-2 py-1 whitespace-nowrap text-xs text-gray-900 border border-gray-300 cursor-pointer hover:bg-gray-100"
                         onClick={() => handleCellClick(app.representativePostalCode || '-')}
                         title="クリックして全文表示"
                       >
                         {app.representativePostalCode || '-'}
                       </td>
                       <td
-                        className="px-3 py-2 text-sm text-gray-900 max-w-xs truncate border border-gray-300 cursor-pointer hover:bg-gray-100"
+                        className="px-2 py-1 text-xs text-gray-900 max-w-xs truncate border border-gray-300 cursor-pointer hover:bg-gray-100"
                         onClick={() => handleCellClick(app.representativeAddress || '-')}
                         title="クリックして全文表示"
                       >
                         {app.representativeAddress || '-'}
                       </td>
                       <td
-                        className="px-3 py-2 text-sm text-gray-900 max-w-xs truncate border border-gray-300 cursor-pointer hover:bg-gray-100"
+                        className="px-2 py-1 text-xs text-gray-900 max-w-xs truncate border border-gray-300 cursor-pointer hover:bg-gray-100"
                         onClick={() => handleCellClick(app.phone)}
                         title="クリックして全文表示"
                       >
                         {app.phone}
                       </td>
                       <td
-                        className="px-3 py-2 text-sm text-gray-900 max-w-xs truncate border border-gray-300 cursor-pointer hover:bg-gray-100"
+                        className="px-2 py-1 text-xs text-gray-900 max-w-xs truncate border border-gray-300 cursor-pointer hover:bg-gray-100"
                         onClick={() => handleCellClick(app.email)}
                         title="クリックして全文表示"
                       >
                         {app.email}
                       </td>
-                      <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300">
+                      <td className="px-2 py-1 whitespace-nowrap text-xs text-gray-900 border border-gray-300">
                         {app.lineCount}回線
                       </td>
-                      <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300">
+                      <td className="px-2 py-1 whitespace-nowrap text-xs text-gray-900 border border-gray-300">
                         {getShippedCount(app)}回線
                       </td>
-                      <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300">
+                      <td className="px-2 py-1 whitespace-nowrap text-xs text-gray-900 border border-gray-300">
                         {getUnshippedCount(app)}回線
                       </td>
-                      <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900 border border-gray-300">
+                      <td className="px-2 py-1 whitespace-nowrap text-xs text-gray-900 border border-gray-300">
                         {getReturnedCount(app)}回線
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm border border-gray-300">
+                      <td className="px-2 py-1 whitespace-nowrap text-xs border border-gray-300">
                         {app.idCardFrontUrl ? (
                           <a href={app.idCardFrontUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-900">
                             表示
@@ -350,7 +364,7 @@ export default function ApplicationsPage() {
                           <span className="text-gray-400">-</span>
                         )}
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm border border-gray-300">
+                      <td className="px-2 py-1 whitespace-nowrap text-xs border border-gray-300">
                         {app.idCardBackUrl ? (
                           <a href={app.idCardBackUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-900">
                             表示
@@ -359,7 +373,7 @@ export default function ApplicationsPage() {
                           <span className="text-gray-400">-</span>
                         )}
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm border border-gray-300">
+                      <td className="px-2 py-1 whitespace-nowrap text-xs border border-gray-300">
                         {app.registrationUrl ? (
                           <a href={app.registrationUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-900">
                             表示
@@ -368,7 +382,16 @@ export default function ApplicationsPage() {
                           <span className="text-gray-400">-</span>
                         )}
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap border border-gray-300">
+                      <td className="px-2 py-1 whitespace-nowrap text-xs text-gray-900 border border-gray-300">
+                        {app.expirationDate ? (
+                          <span className={expired ? 'text-red-600 font-semibold' : ''}>
+                            {new Date(app.expirationDate).toLocaleDateString('ja-JP')}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400">未設定</span>
+                        )}
+                      </td>
+                      <td className="px-2 py-1 whitespace-nowrap text-xs border border-gray-300">
                         <select
                           value={app.verificationStatus}
                           onChange={(e) => handleStatusChange(app.id, 'verificationStatus', e.target.value)}
@@ -379,7 +402,7 @@ export default function ApplicationsPage() {
                           <option value="issue">不備あり</option>
                         </select>
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap border border-gray-300">
+                      <td className="px-2 py-1 whitespace-nowrap text-xs border border-gray-300">
                         <select
                           value={app.paymentStatus}
                           onChange={(e) => handleStatusChange(app.id, 'paymentStatus', e.target.value)}
@@ -391,20 +414,20 @@ export default function ApplicationsPage() {
                         </select>
                       </td>
                       <td
-                        className="px-3 py-2 text-sm text-gray-900 max-w-xs truncate border border-gray-300 cursor-pointer hover:bg-gray-100"
+                        className="px-2 py-1 text-xs text-gray-900 max-w-xs truncate border border-gray-300 cursor-pointer hover:bg-gray-100"
                         onClick={() => handleCellClick(app.comment1 || '-')}
                         title="クリックして全文表示"
                       >
                         {app.comment1 || '-'}
                       </td>
                       <td
-                        className="px-3 py-2 text-sm text-gray-900 max-w-xs truncate border border-gray-300 cursor-pointer hover:bg-gray-100"
+                        className="px-2 py-1 text-xs text-gray-900 max-w-xs truncate border border-gray-300 cursor-pointer hover:bg-gray-100"
                         onClick={() => handleCellClick(app.comment2 || '-')}
                         title="クリックして全文表示"
                       >
                         {app.comment2 || '-'}
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-sm font-medium border border-gray-300">
+                      <td className="px-2 py-1 whitespace-nowrap text-xs font-medium border border-gray-300">
                         <Link
                           href={`/admin/applications/${app.id}`}
                           className="text-blue-600 hover:text-blue-900"
@@ -417,6 +440,7 @@ export default function ApplicationsPage() {
                 })}
               </tbody>
             </table>
+          </div>
         )}
       </div>
 

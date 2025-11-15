@@ -127,6 +127,7 @@ model Application {
   idCardFrontUrl    String?
   idCardBackUrl     String?
   registrationUrl   String?
+  expirationDate    DateTime? // 身分証有効期限
 
   // ステータス
   verificationStatus String  @default("unverified")
@@ -219,6 +220,12 @@ DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.[YOUR-PROJECT-REF].supabas
 # Admin
 ADMIN_EMAIL=admin@example.com
 ADMIN_PASSWORD=change_this_password
+
+# Cloudflare R2 (バックアップ用)
+R2_ACCESS_KEY_ID=your_r2_access_key_id
+R2_SECRET_ACCESS_KEY=your_r2_secret_access_key
+R2_BUCKET_NAME=your_r2_bucket_name
+R2_ACCOUNT_ID=your_cloudflare_account_id
 ```
 
 ### 2. Supabaseプロジェクトの設定
@@ -257,6 +264,28 @@ npm run dev
 ---
 
 ## 📱 実装済み機能
+
+### ✅ 管理画面レイアウト改善
+
+- 申し込み一覧テーブルの横スクロール対応
+- 文字サイズ・余白の最適化（`text-xs`、`px-2 py-1`）
+- 1画面内での表示最適化
+
+### ✅ Cloudflare R2バックアップ
+
+- 申し込み時にSupabase + R2の両方に自動保存（リアルタイム同時バックアップ）
+- 直列アップロード方式（Supabase成功後にR2へバックアップ）
+- R2失敗時は適切なエラーハンドリング（ログ記録、ユーザーには成功を返す）
+- 環境変数: `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_ACCOUNT_ID`
+
+### ✅ 免許証有効期限管理
+
+- 申し込みフォームに有効期限入力欄（カレンダー形式）
+- 個人・法人の両方で必須入力
+- 管理画面一覧に有効期限カラム表示
+- 期限切れの申し込みは赤枠で強調表示
+- 管理画面詳細ページから有効期限を編集可能
+- 既存データは`null`（未設定）として扱う
 
 ### ✅ 申し込みフォーム
 
@@ -564,4 +593,4 @@ Claude Code による自動生成
 
 ---
 
-最終更新日: 2025-11-09
+最終更新日: 2025-11-15

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
+import { uploadToR2 } from '@/lib/r2'
 
 // POST: ファイルアップロード
 export async function POST(request: NextRequest) {
@@ -74,6 +75,19 @@ export async function POST(request: NextRequest) {
     const { data: { publicUrl } } = supabaseAdmin.storage
       .from('applications')
       .getPublicUrl(filePath)
+
+    // Cloudflare R2にバックアップ（エラーは無視）
+    try {
+      await uploadToR2(buffer, filePath, file.type)
+      console.log('[R2] バックアップ成功:', filePath)
+    } catch (r2Error: any) {
+      console.error('[WARNING] R2バックアップ失敗（メインストレージは成功）:', {
+        filePath,
+        error: r2Error.message,
+        timestamp: new Date().toISOString(),
+      })
+      // R2失敗してもユーザーには成功を返す（Supabaseが成功しているため）
+    }
 
     return NextResponse.json({
       success: true,

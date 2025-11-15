@@ -70,6 +70,9 @@ export async function POST(request: NextRequest) {
     if (processedData.representativeBirthDate && typeof processedData.representativeBirthDate === 'string') {
       processedData.representativeBirthDate = new Date(processedData.representativeBirthDate).toISOString()
     }
+    if (processedData.expirationDate && typeof processedData.expirationDate === 'string') {
+      processedData.expirationDate = new Date(processedData.expirationDate).toISOString()
+    }
 
     // 必須フィールドのデフォルト値設定
     if (!processedData.planType) processedData.planType = ''

@@ -65,6 +65,7 @@ model Application {
   idCardFrontUrl    String?  // 身分証表
   idCardBackUrl     String?  // 身分証裏
   registrationUrl   String?  // 登記簿謄本（法人のみ）
+  expirationDate    DateTime? // 身分証有効期限
 
   // 同意チェックボックス
   agreePrivacy      Boolean? // プライバシーポリシーに同意

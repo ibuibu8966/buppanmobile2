@@ -49,6 +49,7 @@ interface Application {
   idCardFrontUrl?: string | null
   idCardBackUrl?: string | null
   registrationUrl?: string | null
+  expirationDate?: string | null
   comment1?: string | null
   comment2?: string | null
   createdAt: string
@@ -67,6 +68,8 @@ export default function ApplicationDetailPage() {
   const [comment2, setComment2] = useState('')
   const [isSavingComments, setIsSavingComments] = useState(false)
   const [tags, setTags] = useState<Tag[]>([])
+  const [isEditingExpiration, setIsEditingExpiration] = useState(false)
+  const [expirationDate, setExpirationDate] = useState('')
 
   useEffect(() => {
     fetchApplication()
@@ -152,6 +155,27 @@ export default function ApplicationDetailPage() {
     } catch (error) {
       console.error('ステータス更新エラー:', error)
       alert('ステータスの更新に失敗しました')
+    }
+  }
+
+  const handleSaveExpiration = async () => {
+    try {
+      const response = await fetch(`/api/admin/applications/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ expirationDate }),
+      })
+
+      if (response.ok) {
+        setIsEditingExpiration(false)
+        fetchApplication()
+        alert('有効期限を更新しました')
+      } else {
+        alert('有効期限の更新に失敗しました')
+      }
+    } catch (error) {
+      console.error('有効期限更新エラー:', error)
+      alert('有効期限の更新に失敗しました')
     }
   }
 
@@ -432,6 +456,57 @@ export default function ApplicationDetailPage() {
               )}
             </div>
           </div>
+        </div>
+
+        {/* 有効期限 */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">身分証有効期限</h2>
+          {isEditingExpiration ? (
+            <div className="space-y-4">
+              <input
+                type="date"
+                value={expirationDate}
+                onChange={(e) => setExpirationDate(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={handleSaveExpiration}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                >
+                  保存
+                </button>
+                <button
+                  onClick={() => {
+                    setIsEditingExpiration(false)
+                    setExpirationDate(application.expirationDate ? new Date(application.expirationDate).toISOString().split('T')[0] : '')
+                  }}
+                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+                >
+                  キャンセル
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div>
+              <p className="text-gray-700 mb-2">
+                {application.expirationDate ? (
+                  new Date(application.expirationDate).toLocaleDateString('ja-JP')
+                ) : (
+                  <span className="text-gray-400">未設定</span>
+                )}
+              </p>
+              <button
+                onClick={() => {
+                  setIsEditingExpiration(true)
+                  setExpirationDate(application.expirationDate ? new Date(application.expirationDate).toISOString().split('T')[0] : '')
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                編集
+              </button>
+            </div>
+          )}
         </div>
 
         {/* コメント */}

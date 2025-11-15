@@ -704,6 +704,7 @@ export default function ApplyPage() {
                             {!formData.postalCode && <li>・ 郵便番号</li>}
                             {!formData.address && <li>・ 住所</li>}
                             {!formData.dateOfBirth && <li>・ 生年月日</li>}
+                            {!formData.expirationDate && <li>・ 身分証有効期限</li>}
                           </>
                         ) : (
                           <>
@@ -725,6 +726,7 @@ export default function ApplyPage() {
                             {!formData.contactLastNameKana && <li>・ 担当者姓（カナ）</li>}
                             {!formData.contactFirstNameKana && <li>・ 担当者名（カナ）</li>}
                             {!formData.postalCode && <li>・ 郵便番号</li>}
+                            {!formData.expirationDate && <li>・ 身分証有効期限</li>}
                             {!formData.address && <li>・ 住所</li>}
                           </>
                         )}
@@ -895,6 +897,20 @@ export default function ApplyPage() {
                     </div>
                   </div>
 
+                  {/* 身分証有効期限（個人） */}
+                  {formData.applicantType === 'individual' && (
+                    <div>
+                      <label className="block text-white/80 mb-2">身分証有効期限<span className="text-red-400">*</span></label>
+                      <input
+                        type="date"
+                        value={formData.expirationDate || ''}
+                        onChange={(e) => updateFormData({ expirationDate: e.target.value })}
+                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
+                        required
+                      />
+                    </div>
+                  )}
+
                   {/* 身分証明書（裏） */}
                   <div>
                     <label className="block text-white/80 mb-2">
@@ -935,6 +951,20 @@ export default function ApplyPage() {
                       )}
                     </div>
                   </div>
+
+                  {/* 身分証有効期限（法人） */}
+                  {formData.applicantType === 'corporate' && (
+                    <div>
+                      <label className="block text-white/80 mb-2">身分証有効期限<span className="text-red-400">*</span></label>
+                      <input
+                        type="date"
+                        value={formData.expirationDate || ''}
+                        onChange={(e) => updateFormData({ expirationDate: e.target.value })}
+                        className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/40 focus:outline-none focus:border-[#d4af37] transition-colors"
+                        required
+                      />
+                    </div>
+                  )}
 
                   {/* 登記簿謄本（法人のみ） */}
                   {formData.applicantType === 'corporate' && (
@@ -1052,9 +1082,13 @@ export default function ApplyPage() {
                         <span className="text-white/60">メールアドレス</span>
                         <span>{formData.email}</span>
                       </div>
-                      <div className="flex justify-between py-2">
+                      <div className="flex justify-between py-2 border-b border-white/10">
                         <span className="text-white/60">住所</span>
                         <span>〒{formData.postalCode} {formData.address}</span>
+                      </div>
+                      <div className="flex justify-between py-2">
+                        <span className="text-white/60">身分証有効期限</span>
+                        <span>{formData.expirationDate}</span>
                       </div>
                     </div>
                     <button
