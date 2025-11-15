@@ -44,6 +44,7 @@ type FormData = {
   idCardFrontUrl?: string
   idCardBackUrl?: string
   registrationUrl?: string
+  expirationDate?: string
 
   // ステップ4
   agreePrivacy?: boolean
@@ -229,6 +230,7 @@ export default function ApplyPage() {
   // ステップ3の入力チェック
   const isStep3Valid = () => {
     if (!formData.idCardFrontUrl || !formData.idCardBackUrl) return false
+    if (!formData.expirationDate) return false
     if (formData.applicantType === 'corporate' && !formData.registrationUrl) return false
     return true
   }
@@ -704,7 +706,6 @@ export default function ApplyPage() {
                             {!formData.postalCode && <li>・ 郵便番号</li>}
                             {!formData.address && <li>・ 住所</li>}
                             {!formData.dateOfBirth && <li>・ 生年月日</li>}
-                            {!formData.expirationDate && <li>・ 身分証有効期限</li>}
                           </>
                         ) : (
                           <>
@@ -726,7 +727,6 @@ export default function ApplyPage() {
                             {!formData.contactLastNameKana && <li>・ 担当者姓（カナ）</li>}
                             {!formData.contactFirstNameKana && <li>・ 担当者名（カナ）</li>}
                             {!formData.postalCode && <li>・ 郵便番号</li>}
-                            {!formData.expirationDate && <li>・ 身分証有効期限</li>}
                             {!formData.address && <li>・ 住所</li>}
                           </>
                         )}
