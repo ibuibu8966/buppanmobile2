@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 
 interface Tag {
@@ -54,6 +54,10 @@ export default function LinesManagementPage() {
     lineStatus: ''
   })
   const [showBulkSettingsModal, setShowBulkSettingsModal] = useState(false)
+  const [sortConfig, setSortConfig] = useState<{
+    key: string | null
+    direction: 'asc' | 'desc'
+  }>({ key: null, direction: 'asc' })
 
   useEffect(() => {
     fetchLines()
@@ -109,6 +113,98 @@ export default function LinesManagementPage() {
       console.error('タグ取得エラー:', error)
     }
   }
+
+  // ソートハンドラー
+  const handleSort = (key: string) => {
+    setSortConfig(prev => ({
+      key,
+      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
+    }))
+  }
+
+  // ソート済みデータ
+  const sortedLines = useMemo(() => {
+    if (!sortConfig.key) return lines
+
+    const sorted = [...lines].sort((a, b) => {
+      let aValue: any = null
+      let bValue: any = null
+
+      // ソートキーに応じて値を取得
+      switch (sortConfig.key) {
+        case 'applicantName':
+          aValue = a.application.applicantType === 'individual'
+            ? `${a.application.lastName || ''} ${a.application.firstName || ''}`.trim()
+            : a.application.companyName || ''
+          bValue = b.application.applicantType === 'individual'
+            ? `${b.application.lastName || ''} ${b.application.firstName || ''}`.trim()
+            : b.application.companyName || ''
+          break
+        case 'companyName':
+          aValue = a.application.companyName || ''
+          bValue = b.application.companyName || ''
+          break
+        case 'phoneNumber':
+          aValue = a.phoneNumber || ''
+          bValue = b.phoneNumber || ''
+          break
+        case 'simLocation':
+          aValue = a.simLocation?.name || ''
+          bValue = b.simLocation?.name || ''
+          break
+        case 'spareTag':
+          aValue = a.spareTag?.name || ''
+          bValue = b.spareTag?.name || ''
+          break
+        case 'shipmentDate':
+          aValue = a.shipmentDate || ''
+          bValue = b.shipmentDate || ''
+          break
+        case 'returnDate':
+          aValue = a.returnDate || ''
+          bValue = b.returnDate || ''
+          break
+        case 'lineStatus':
+          // ステータスのカスタム順序
+          const statusOrder: Record<string, number> = {
+            'not_opened': 1,
+            'opened': 2,
+            'shipped': 3,
+            'waiting_return': 4,
+            'returned': 5,
+            'canceled': 6
+          }
+          aValue = statusOrder[a.lineStatus] || 999
+          bValue = statusOrder[b.lineStatus] || 999
+          break
+        default:
+          return 0
+      }
+
+      // null/空文字は最後に
+      if (!aValue && bValue) return 1
+      if (aValue && !bValue) return -1
+      if (!aValue && !bValue) return 0
+
+      // 比較
+      if (sortConfig.key === 'lineStatus') {
+        // 数値比較
+        return sortConfig.direction === 'asc' ? aValue - bValue : bValue - aValue
+      } else if (sortConfig.key === 'shipmentDate' || sortConfig.key === 'returnDate') {
+        // 日付比較
+        return sortConfig.direction === 'asc'
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue)
+      } else {
+        // 文字列比較（大小文字を区別しない）
+        return sortConfig.direction === 'asc'
+          ? aValue.toString().localeCompare(bValue.toString(), 'ja')
+          : bValue.toString().localeCompare(aValue.toString(), 'ja')
+      }
+    })
+
+    return sorted
+  }, [lines, sortConfig])
 
   const handleLineChange = (lineId: string, field: keyof PendingChange, value: string | null) => {
     setPendingChanges(prev => ({
@@ -299,18 +395,58 @@ export default function LinesManagementPage() {
                         className="cursor-pointer"
                       />
                     </th>
-                    <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">申込者名</th>
-                    <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">会社名</th>
-                    <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">電話番号</th>
-                    <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">SIMの場所</th>
-                    <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">予備タグ</th>
-                    <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">発送日</th>
-                    <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">返却日</th>
-                    <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">ステータス</th>
+                    <th
+                      className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                      onClick={() => handleSort('applicantName')}
+                    >
+                      申込者名 {sortConfig.key === 'applicantName' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                    </th>
+                    <th
+                      className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                      onClick={() => handleSort('companyName')}
+                    >
+                      会社名 {sortConfig.key === 'companyName' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                    </th>
+                    <th
+                      className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                      onClick={() => handleSort('phoneNumber')}
+                    >
+                      電話番号 {sortConfig.key === 'phoneNumber' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                    </th>
+                    <th
+                      className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                      onClick={() => handleSort('simLocation')}
+                    >
+                      SIMの場所 {sortConfig.key === 'simLocation' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                    </th>
+                    <th
+                      className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                      onClick={() => handleSort('spareTag')}
+                    >
+                      予備タグ {sortConfig.key === 'spareTag' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                    </th>
+                    <th
+                      className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                      onClick={() => handleSort('shipmentDate')}
+                    >
+                      発送日 {sortConfig.key === 'shipmentDate' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                    </th>
+                    <th
+                      className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                      onClick={() => handleSort('returnDate')}
+                    >
+                      返却日 {sortConfig.key === 'returnDate' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                    </th>
+                    <th
+                      className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                      onClick={() => handleSort('lineStatus')}
+                    >
+                      ステータス {sortConfig.key === 'lineStatus' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white">
-                  {lines.map((line) => {
+                  {sortedLines.map((line) => {
                     const hasChanges = !!pendingChanges[line.id]
                     const isSelected = selectedLines.has(line.id)
                     const currentPhoneNumber = getCurrentValue(line.id, 'phoneNumber', line.phoneNumber)
