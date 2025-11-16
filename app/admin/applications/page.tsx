@@ -298,7 +298,7 @@ export default function ApplicationsPage() {
               </div>
             )}
             <div className="overflow-x-auto">
-            <table className="border-collapse border border-gray-300" style={{ width: 'max-content' }}>
+            <table className="w-full border-collapse border border-gray-300">
               <thead className="sticky top-0 z-20">
                 <tr className="bg-gray-100">
                   <th colSpan={11} className="px-1 py-0.5 text-center text-[10px] font-bold text-gray-800 border border-gray-300">個人情報/法人情報</th>
@@ -346,92 +346,92 @@ export default function ApplicationsPage() {
                   return (
                     <tr key={app.id} className={`hover:bg-blue-50 ${expired ? 'border-2 border-red-500' : ''} ${hasChanges ? 'bg-yellow-50' : ''}`}>
                       <td className="px-0.5 py-0.5 text-[10px] text-gray-900 border border-gray-300">
-                        <div className="w-[5ch] truncate" title={app.applicantType === 'individual' ? '個人' : '法人'}>
+                        <div className="min-w-[5ch] truncate" title={app.applicantType === 'individual' ? '個人' : '法人'}>
                           {app.applicantType === 'individual' ? '個人' : '法人'}
                         </div>
                       </td>
                       <td className="px-0.5 py-0.5 text-[10px] text-gray-900 border border-gray-300 cursor-pointer hover:bg-gray-100"
                         onClick={() => handleCellClick(getApplicantName(app))}>
-                        <div className="w-[10ch] truncate" title={getApplicantName(app)}>
+                        <div className="min-w-[10ch] truncate" title={getApplicantName(app)}>
                           {getApplicantName(app)}
                         </div>
                       </td>
                       <td className="px-0.5 py-0.5 text-[10px] text-gray-900 border border-gray-300 cursor-pointer hover:bg-gray-100"
                         onClick={() => handleCellClick(getApplicantNameKana(app))}>
-                        <div className="w-[10ch] truncate" title={getApplicantNameKana(app)}>
+                        <div className="min-w-[10ch] truncate" title={getApplicantNameKana(app)}>
                           {getApplicantNameKana(app)}
                         </div>
                       </td>
                       <td className="px-0.5 py-0.5 text-[10px] text-gray-900 border border-gray-300 cursor-pointer hover:bg-gray-100"
                         onClick={() => handleCellClick(getRepresentativeName(app))}>
-                        <div className="w-[10ch] truncate" title={getRepresentativeName(app)}>
+                        <div className="min-w-[10ch] truncate" title={getRepresentativeName(app)}>
                           {getRepresentativeName(app)}
                         </div>
                       </td>
                       <td className="px-0.5 py-0.5 text-[10px] text-gray-900 border border-gray-300 cursor-pointer hover:bg-gray-100"
                         onClick={() => handleCellClick(getContactName(app))}>
-                        <div className="w-[10ch] truncate" title={getContactName(app)}>
+                        <div className="min-w-[10ch] truncate" title={getContactName(app)}>
                           {getContactName(app)}
                         </div>
                       </td>
                       <td className="px-0.5 py-0.5 text-[10px] text-gray-900 border border-gray-300 cursor-pointer hover:bg-gray-100"
                         onClick={() => handleCellClick(app.applicantType === 'corporate' ? app.postalCode : '-')}>
-                        <div className="w-[8ch] truncate" title={app.applicantType === 'corporate' ? app.postalCode : '-'}>
+                        <div className="min-w-[8ch] truncate" title={app.applicantType === 'corporate' ? app.postalCode : '-'}>
                           {app.applicantType === 'corporate' ? app.postalCode : '-'}
                         </div>
                       </td>
                       <td className="px-0.5 py-0.5 text-[10px] text-gray-900 border border-gray-300 cursor-pointer hover:bg-gray-100"
                         onClick={() => handleCellClick(app.applicantType === 'corporate' ? app.address : '-')}>
-                        <div className="w-[8ch] truncate" title={app.applicantType === 'corporate' ? app.address : '-'}>
+                        <div className="min-w-[8ch] truncate" title={app.applicantType === 'corporate' ? app.address : '-'}>
                           {app.applicantType === 'corporate' ? app.address : '-'}
                         </div>
                       </td>
                       <td className="px-0.5 py-0.5 text-[10px] text-gray-900 border border-gray-300 cursor-pointer hover:bg-gray-100"
                         onClick={() => handleCellClick(app.representativePostalCode || '-')}>
-                        <div className="w-[8ch] truncate" title={app.representativePostalCode || '-'}>
+                        <div className="min-w-[8ch] truncate" title={app.representativePostalCode || '-'}>
                           {app.representativePostalCode || '-'}
                         </div>
                       </td>
                       <td className="px-0.5 py-0.5 text-[10px] text-gray-900 border border-gray-300 cursor-pointer hover:bg-gray-100"
                         onClick={() => handleCellClick(app.representativeAddress || '-')}>
-                        <div className="w-[8ch] truncate" title={app.representativeAddress || '-'}>
+                        <div className="min-w-[8ch] truncate" title={app.representativeAddress || '-'}>
                           {app.representativeAddress || '-'}
                         </div>
                       </td>
                       <td className="px-0.5 py-0.5 text-[10px] text-gray-900 border border-gray-300 cursor-pointer hover:bg-gray-100"
                         onClick={() => handleCellClick(app.phone)}>
-                        <div className="w-[13ch] truncate" title={app.phone}>
+                        <div className="min-w-[13ch] truncate" title={app.phone}>
                           {app.phone}
                         </div>
                       </td>
                       <td className="px-0.5 py-0.5 text-[10px] text-gray-900 border border-gray-300 cursor-pointer hover:bg-gray-100"
                         onClick={() => handleCellClick(app.email)}>
-                        <div className="w-[20ch] truncate" title={app.email}>
+                        <div className="min-w-[20ch] truncate" title={app.email}>
                           {app.email}
                         </div>
                       </td>
                       <td className="px-0.5 py-0.5 text-[10px] text-gray-900 border border-gray-300">
-                        <div className="w-[5ch] truncate" title={`${app.lineCount}`}>
+                        <div className="min-w-[5ch] truncate" title={`${app.lineCount}`}>
                           {app.lineCount}
                         </div>
                       </td>
                       <td className="px-0.5 py-0.5 text-[10px] text-gray-900 border border-gray-300">
-                        <div className="w-[4ch] truncate" title={`${getShippedCount(app)}`}>
+                        <div className="min-w-[4ch] truncate" title={`${getShippedCount(app)}`}>
                           {getShippedCount(app)}
                         </div>
                       </td>
                       <td className="px-0.5 py-0.5 text-[10px] text-gray-900 border border-gray-300">
-                        <div className="w-[4ch] truncate" title={`${getUnshippedCount(app)}`}>
+                        <div className="min-w-[4ch] truncate" title={`${getUnshippedCount(app)}`}>
                           {getUnshippedCount(app)}
                         </div>
                       </td>
                       <td className="px-0.5 py-0.5 text-[10px] text-gray-900 border border-gray-300">
-                        <div className="w-[4ch] truncate" title={`${getReturnedCount(app)}`}>
+                        <div className="min-w-[4ch] truncate" title={`${getReturnedCount(app)}`}>
                           {getReturnedCount(app)}
                         </div>
                       </td>
                       <td className="px-0.5 py-0.5 text-[10px] border border-gray-300">
-                        <div className="w-[12ch] flex gap-0.5">
+                        <div className="min-w-[12ch] flex gap-0.5">
                           {app.idCardFrontUrl ? (
                             <button onClick={() => openImageModal(app, 'front')} className="text-blue-600 hover:text-blue-900 cursor-pointer text-[9px]">
                               表
@@ -458,7 +458,7 @@ export default function ApplicationsPage() {
                         </div>
                       </td>
                       <td className="px-0.5 py-0.5 text-[10px] text-gray-900 border border-gray-300">
-                        <div className="w-[10ch] truncate">
+                        <div className="min-w-[10ch] truncate">
                           {app.expirationDate ? (
                             <span className={expired ? 'text-red-600 font-semibold' : ''} title={new Date(app.expirationDate).toLocaleDateString('ja-JP')}>
                               {new Date(app.expirationDate).toLocaleDateString('ja-JP')}
@@ -494,18 +494,18 @@ export default function ApplicationsPage() {
                       </td>
                       <td className="px-0.5 py-0.5 text-[10px] text-gray-900 border border-gray-300 cursor-pointer hover:bg-gray-100"
                         onClick={() => handleCellClick(app.comment1 || '-')}>
-                        <div className="w-[10ch] truncate" title={app.comment1 || '-'}>
+                        <div className="min-w-[10ch] truncate" title={app.comment1 || '-'}>
                           {app.comment1 || '-'}
                         </div>
                       </td>
                       <td className="px-0.5 py-0.5 text-[10px] text-gray-900 border border-gray-300 cursor-pointer hover:bg-gray-100"
                         onClick={() => handleCellClick(app.comment2 || '-')}>
-                        <div className="w-[10ch] truncate" title={app.comment2 || '-'}>
+                        <div className="min-w-[10ch] truncate" title={app.comment2 || '-'}>
                           {app.comment2 || '-'}
                         </div>
                       </td>
                       <td className="px-0.5 py-0.5 text-[10px] font-medium border border-gray-300">
-                        <div className="w-[2ch] truncate">
+                        <div className="min-w-[2ch] truncate">
                           <Link
                             href={`/admin/applications/${app.id}`}
                             className="text-blue-600 hover:text-blue-900"
