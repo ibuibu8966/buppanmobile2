@@ -347,170 +347,182 @@ export default function ApplicationsPage() {
 
                   return (
                     <tr key={app.id} className={`hover:bg-blue-50 ${expired ? 'border-2 border-red-500' : ''} ${hasChanges ? 'bg-yellow-50' : ''}`}>
-                      <td className="px-1 py-0.5 whitespace-nowrap text-[10px] text-gray-900 border border-gray-300">
-                        {app.applicantType === 'individual' ? '個人' : '法人'}
+                      <td className="px-1 py-0.5 text-[10px] text-gray-900 border border-gray-300">
+                        <div className="max-w-[5ch] truncate" title={app.applicantType === 'individual' ? '個人' : '法人'}>
+                          {app.applicantType === 'individual' ? '個人' : '法人'}
+                        </div>
                       </td>
-                      <td
-                        className="px-1 py-0.5 text-[10px] text-gray-900 max-w-xs truncate border border-gray-300 cursor-pointer hover:bg-gray-100"
-                        onClick={() => handleCellClick(getApplicantName(app))}
-                        title="クリックして全文表示"
-                      >
-                        {getApplicantName(app)}
+                      <td className="px-1 py-0.5 text-[10px] text-gray-900 border border-gray-300 cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleCellClick(getApplicantName(app))}>
+                        <div className="max-w-[10ch] truncate" title={getApplicantName(app)}>
+                          {getApplicantName(app)}
+                        </div>
                       </td>
-                      <td
-                        className="px-1 py-0.5 text-[10px] text-gray-900 max-w-xs truncate border border-gray-300 cursor-pointer hover:bg-gray-100"
-                        onClick={() => handleCellClick(getApplicantNameKana(app))}
-                        title="クリックして全文表示"
-                      >
-                        {getApplicantNameKana(app)}
+                      <td className="px-1 py-0.5 text-[10px] text-gray-900 border border-gray-300 cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleCellClick(getApplicantNameKana(app))}>
+                        <div className="max-w-[10ch] truncate" title={getApplicantNameKana(app)}>
+                          {getApplicantNameKana(app)}
+                        </div>
                       </td>
-                      <td
-                        className="px-1 py-0.5 text-[10px] text-gray-900 max-w-xs truncate border border-gray-300 cursor-pointer hover:bg-gray-100"
-                        onClick={() => handleCellClick(getRepresentativeName(app))}
-                        title="クリックして全文表示"
-                      >
-                        {getRepresentativeName(app)}
+                      <td className="px-1 py-0.5 text-[10px] text-gray-900 border border-gray-300 cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleCellClick(getRepresentativeName(app))}>
+                        <div className="max-w-[10ch] truncate" title={getRepresentativeName(app)}>
+                          {getRepresentativeName(app)}
+                        </div>
                       </td>
-                      <td
-                        className="px-1 py-0.5 text-[10px] text-gray-900 max-w-xs truncate border border-gray-300 cursor-pointer hover:bg-gray-100"
-                        onClick={() => handleCellClick(getContactName(app))}
-                        title="クリックして全文表示"
-                      >
-                        {getContactName(app)}
+                      <td className="px-1 py-0.5 text-[10px] text-gray-900 border border-gray-300 cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleCellClick(getContactName(app))}>
+                        <div className="max-w-[10ch] truncate" title={getContactName(app)}>
+                          {getContactName(app)}
+                        </div>
                       </td>
-                      <td
-                        className="px-1 py-0.5 whitespace-nowrap text-[10px] text-gray-900 border border-gray-300 cursor-pointer hover:bg-gray-100"
-                        onClick={() => handleCellClick(app.applicantType === 'corporate' ? app.postalCode : '-')}
-                        title="クリックして全文表示"
-                      >
-                        {app.applicantType === 'corporate' ? app.postalCode : '-'}
+                      <td className="px-1 py-0.5 text-[10px] text-gray-900 border border-gray-300 cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleCellClick(app.applicantType === 'corporate' ? app.postalCode : '-')}>
+                        <div className="max-w-[8ch] truncate" title={app.applicantType === 'corporate' ? app.postalCode : '-'}>
+                          {app.applicantType === 'corporate' ? app.postalCode : '-'}
+                        </div>
                       </td>
-                      <td
-                        className="px-1 py-0.5 text-[10px] text-gray-900 max-w-xs truncate border border-gray-300 cursor-pointer hover:bg-gray-100"
-                        onClick={() => handleCellClick(app.applicantType === 'corporate' ? app.address : '-')}
-                        title="クリックして全文表示"
-                      >
-                        {app.applicantType === 'corporate' ? app.address : '-'}
+                      <td className="px-1 py-0.5 text-[10px] text-gray-900 border border-gray-300 cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleCellClick(app.applicantType === 'corporate' ? app.address : '-')}>
+                        <div className="max-w-[8ch] truncate" title={app.applicantType === 'corporate' ? app.address : '-'}>
+                          {app.applicantType === 'corporate' ? app.address : '-'}
+                        </div>
                       </td>
-                      <td
-                        className="px-1 py-0.5 whitespace-nowrap text-[10px] text-gray-900 border border-gray-300 cursor-pointer hover:bg-gray-100"
-                        onClick={() => handleCellClick(app.representativePostalCode || '-')}
-                        title="クリックして全文表示"
-                      >
-                        {app.representativePostalCode || '-'}
+                      <td className="px-1 py-0.5 text-[10px] text-gray-900 border border-gray-300 cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleCellClick(app.representativePostalCode || '-')}>
+                        <div className="max-w-[8ch] truncate" title={app.representativePostalCode || '-'}>
+                          {app.representativePostalCode || '-'}
+                        </div>
                       </td>
-                      <td
-                        className="px-1 py-0.5 text-[10px] text-gray-900 max-w-xs truncate border border-gray-300 cursor-pointer hover:bg-gray-100"
-                        onClick={() => handleCellClick(app.representativeAddress || '-')}
-                        title="クリックして全文表示"
-                      >
-                        {app.representativeAddress || '-'}
+                      <td className="px-1 py-0.5 text-[10px] text-gray-900 border border-gray-300 cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleCellClick(app.representativeAddress || '-')}>
+                        <div className="max-w-[8ch] truncate" title={app.representativeAddress || '-'}>
+                          {app.representativeAddress || '-'}
+                        </div>
                       </td>
-                      <td
-                        className="px-1 py-0.5 text-[10px] text-gray-900 max-w-xs truncate border border-gray-300 cursor-pointer hover:bg-gray-100"
-                        onClick={() => handleCellClick(app.phone)}
-                        title="クリックして全文表示"
-                      >
-                        {app.phone}
+                      <td className="px-1 py-0.5 text-[10px] text-gray-900 border border-gray-300 cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleCellClick(app.phone)}>
+                        <div className="max-w-[13ch] truncate" title={app.phone}>
+                          {app.phone}
+                        </div>
                       </td>
-                      <td
-                        className="px-1 py-0.5 text-[10px] text-gray-900 max-w-xs truncate border border-gray-300 cursor-pointer hover:bg-gray-100"
-                        onClick={() => handleCellClick(app.email)}
-                        title="クリックして全文表示"
-                      >
-                        {app.email}
+                      <td className="px-1 py-0.5 text-[10px] text-gray-900 border border-gray-300 cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleCellClick(app.email)}>
+                        <div className="max-w-[20ch] truncate" title={app.email}>
+                          {app.email}
+                        </div>
                       </td>
-                      <td className="px-1 py-0.5 whitespace-nowrap text-[10px] text-gray-900 border border-gray-300">
-                        {app.lineCount}回線
+                      <td className="px-1 py-0.5 text-[10px] text-gray-900 border border-gray-300">
+                        <div className="max-w-[5ch] truncate" title={`${app.lineCount}回線`}>
+                          {app.lineCount}回線
+                        </div>
                       </td>
-                      <td className="px-1 py-0.5 whitespace-nowrap text-[10px] text-gray-900 border border-gray-300">
-                        {getShippedCount(app)}回線
+                      <td className="px-1 py-0.5 text-[10px] text-gray-900 border border-gray-300">
+                        <div className="max-w-[3ch] truncate" title={`${getShippedCount(app)}回線`}>
+                          {getShippedCount(app)}回線
+                        </div>
                       </td>
-                      <td className="px-1 py-0.5 whitespace-nowrap text-[10px] text-gray-900 border border-gray-300">
-                        {getUnshippedCount(app)}回線
+                      <td className="px-1 py-0.5 text-[10px] text-gray-900 border border-gray-300">
+                        <div className="max-w-[3ch] truncate" title={`${getUnshippedCount(app)}回線`}>
+                          {getUnshippedCount(app)}回線
+                        </div>
                       </td>
-                      <td className="px-1 py-0.5 whitespace-nowrap text-[10px] text-gray-900 border border-gray-300">
-                        {getReturnedCount(app)}回線
+                      <td className="px-1 py-0.5 text-[10px] text-gray-900 border border-gray-300">
+                        <div className="max-w-[3ch] truncate" title={`${getReturnedCount(app)}回線`}>
+                          {getReturnedCount(app)}回線
+                        </div>
                       </td>
-                      <td className="px-1 py-0.5 whitespace-nowrap text-[10px] border border-gray-300">
-                        {app.idCardFrontUrl ? (
-                          <button onClick={() => openImageModal(app, 'front')} className="text-blue-600 hover:text-blue-900 cursor-pointer">
-                            表示
-                          </button>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
+                      <td className="px-1 py-0.5 text-[10px] border border-gray-300">
+                        <div className="max-w-[4ch] truncate">
+                          {app.idCardFrontUrl ? (
+                            <button onClick={() => openImageModal(app, 'front')} className="text-blue-600 hover:text-blue-900 cursor-pointer">
+                              表示
+                            </button>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </div>
                       </td>
-                      <td className="px-1 py-0.5 whitespace-nowrap text-[10px] border border-gray-300">
-                        {app.idCardBackUrl ? (
-                          <button onClick={() => openImageModal(app, 'back')} className="text-blue-600 hover:text-blue-900 cursor-pointer">
-                            表示
-                          </button>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
+                      <td className="px-1 py-0.5 text-[10px] border border-gray-300">
+                        <div className="max-w-[4ch] truncate">
+                          {app.idCardBackUrl ? (
+                            <button onClick={() => openImageModal(app, 'back')} className="text-blue-600 hover:text-blue-900 cursor-pointer">
+                              表示
+                            </button>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </div>
                       </td>
-                      <td className="px-1 py-0.5 whitespace-nowrap text-[10px] border border-gray-300">
-                        {app.registrationUrl ? (
-                          <button onClick={() => openImageModal(app, 'registration')} className="text-blue-600 hover:text-blue-900 cursor-pointer">
-                            表示
-                          </button>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
+                      <td className="px-1 py-0.5 text-[10px] border border-gray-300">
+                        <div className="max-w-[2ch] truncate">
+                          {app.registrationUrl ? (
+                            <button onClick={() => openImageModal(app, 'registration')} className="text-blue-600 hover:text-blue-900 cursor-pointer">
+                              表示
+                            </button>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </div>
                       </td>
-                      <td className="px-1 py-0.5 whitespace-nowrap text-[10px] text-gray-900 border border-gray-300">
-                        {app.expirationDate ? (
-                          <span className={expired ? 'text-red-600 font-semibold' : ''}>
-                            {new Date(app.expirationDate).toLocaleDateString('ja-JP')}
-                          </span>
-                        ) : (
-                          <span className="text-gray-400">未設定</span>
-                        )}
+                      <td className="px-1 py-0.5 text-[10px] text-gray-900 border border-gray-300">
+                        <div className="max-w-[10ch] truncate">
+                          {app.expirationDate ? (
+                            <span className={expired ? 'text-red-600 font-semibold' : ''} title={new Date(app.expirationDate).toLocaleDateString('ja-JP')}>
+                              {new Date(app.expirationDate).toLocaleDateString('ja-JP')}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400">未設定</span>
+                          )}
+                        </div>
                       </td>
-                      <td className="px-1 py-0.5 whitespace-nowrap text-[10px] border border-gray-300">
-                        <select
-                          value={currentVerificationStatus}
-                          onChange={(e) => handleStatusChange(app.id, 'verificationStatus', e.target.value)}
-                          className={`px-1 py-0.5 text-[10px] font-semibold rounded border-0 ${getVerificationBadge(currentVerificationStatus).color} cursor-pointer`}
-                        >
-                          <option value="unverified">未確認</option>
-                          <option value="verified">確認済み</option>
-                          <option value="issue">不備あり</option>
-                        </select>
+                      <td className="px-1 py-0.5 text-[10px] border border-gray-300">
+                        <div className="max-w-[5ch]">
+                          <select
+                            value={currentVerificationStatus}
+                            onChange={(e) => handleStatusChange(app.id, 'verificationStatus', e.target.value)}
+                            className={`w-full px-1 py-0.5 text-[10px] font-semibold rounded border-0 ${getVerificationBadge(currentVerificationStatus).color} cursor-pointer`}
+                          >
+                            <option value="unverified">未確認</option>
+                            <option value="verified">確認済み</option>
+                            <option value="issue">不備あり</option>
+                          </select>
+                        </div>
                       </td>
-                      <td className="px-1 py-0.5 whitespace-nowrap text-[10px] border border-gray-300">
-                        <select
-                          value={currentPaymentStatus}
-                          onChange={(e) => handleStatusChange(app.id, 'paymentStatus', e.target.value)}
-                          className={`px-1 py-0.5 text-[10px] font-semibold rounded border-0 ${getPaymentBadge(currentPaymentStatus).color} cursor-pointer`}
-                        >
-                          <option value="not_issued">未発行</option>
-                          <option value="issued">発行済み</option>
-                          <option value="paid">入金済み</option>
-                        </select>
+                      <td className="px-1 py-0.5 text-[10px] border border-gray-300">
+                        <div className="max-w-[5ch]">
+                          <select
+                            value={currentPaymentStatus}
+                            onChange={(e) => handleStatusChange(app.id, 'paymentStatus', e.target.value)}
+                            className={`w-full px-1 py-0.5 text-[10px] font-semibold rounded border-0 ${getPaymentBadge(currentPaymentStatus).color} cursor-pointer`}
+                          >
+                            <option value="not_issued">未発行</option>
+                            <option value="issued">発行済み</option>
+                            <option value="paid">入金済み</option>
+                          </select>
+                        </div>
                       </td>
-                      <td
-                        className="px-1 py-0.5 text-[10px] text-gray-900 max-w-xs truncate border border-gray-300 cursor-pointer hover:bg-gray-100"
-                        onClick={() => handleCellClick(app.comment1 || '-')}
-                        title="クリックして全文表示"
-                      >
-                        {app.comment1 || '-'}
+                      <td className="px-1 py-0.5 text-[10px] text-gray-900 border border-gray-300 cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleCellClick(app.comment1 || '-')}>
+                        <div className="max-w-[10ch] truncate" title={app.comment1 || '-'}>
+                          {app.comment1 || '-'}
+                        </div>
                       </td>
-                      <td
-                        className="px-1 py-0.5 text-[10px] text-gray-900 max-w-xs truncate border border-gray-300 cursor-pointer hover:bg-gray-100"
-                        onClick={() => handleCellClick(app.comment2 || '-')}
-                        title="クリックして全文表示"
-                      >
-                        {app.comment2 || '-'}
+                      <td className="px-1 py-0.5 text-[10px] text-gray-900 border border-gray-300 cursor-pointer hover:bg-gray-100"
+                        onClick={() => handleCellClick(app.comment2 || '-')}>
+                        <div className="max-w-[10ch] truncate" title={app.comment2 || '-'}>
+                          {app.comment2 || '-'}
+                        </div>
                       </td>
-                      <td className="px-1 py-0.5 whitespace-nowrap text-[10px] font-medium border border-gray-300">
-                        <Link
-                          href={`/admin/applications/${app.id}`}
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          詳細
-                        </Link>
+                      <td className="px-1 py-0.5 text-[10px] font-medium border border-gray-300">
+                        <div className="max-w-[2ch] truncate">
+                          <Link
+                            href={`/admin/applications/${app.id}`}
+                            className="text-blue-600 hover:text-blue-900"
+                          >
+                            詳細
+                          </Link>
+                        </div>
                       </td>
                     </tr>
                   )
