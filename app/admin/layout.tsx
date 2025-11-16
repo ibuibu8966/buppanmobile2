@@ -54,6 +54,12 @@ export default async function AdminLayout({ children }: { children: ReactNode })
                   申し込み一覧
                 </Link>
                 <Link
+                  href="/admin/lines"
+                  className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+                >
+                  総合回線管理
+                </Link>
+                <Link
                   href="/admin/tags"
                   className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
                 >
