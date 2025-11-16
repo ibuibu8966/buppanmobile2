@@ -418,17 +418,17 @@ export default function ApplicationsPage() {
                         </div>
                       </td>
                       <td className="px-1 py-0.5 text-[10px] text-gray-900 border border-gray-300">
-                        <div className="max-w-[3ch] truncate" title={`${getShippedCount(app)}回線`}>
+                        <div className="max-w-[4ch] truncate" title={`${getShippedCount(app)}回線`}>
                           {getShippedCount(app)}回線
                         </div>
                       </td>
                       <td className="px-1 py-0.5 text-[10px] text-gray-900 border border-gray-300">
-                        <div className="max-w-[3ch] truncate" title={`${getUnshippedCount(app)}回線`}>
+                        <div className="max-w-[4ch] truncate" title={`${getUnshippedCount(app)}回線`}>
                           {getUnshippedCount(app)}回線
                         </div>
                       </td>
                       <td className="px-1 py-0.5 text-[10px] text-gray-900 border border-gray-300">
-                        <div className="max-w-[3ch] truncate" title={`${getReturnedCount(app)}回線`}>
+                        <div className="max-w-[4ch] truncate" title={`${getReturnedCount(app)}回線`}>
                           {getReturnedCount(app)}回線
                         </div>
                       </td>
