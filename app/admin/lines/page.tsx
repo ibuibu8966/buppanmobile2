@@ -46,8 +46,14 @@ export default function LinesManagementPage() {
   const [pendingChanges, setPendingChanges] = useState<Record<string, PendingChange>>({})
   const [isSaving, setIsSaving] = useState(false)
   const [selectedLines, setSelectedLines] = useState<Set<string>>(new Set())
-  const [bulkShipmentDate, setBulkShipmentDate] = useState('')
-  const [showBulkDateModal, setShowBulkDateModal] = useState(false)
+  const [bulkSettings, setBulkSettings] = useState({
+    simLocationId: '',
+    spareTagId: '',
+    shipmentDate: '',
+    returnDate: '',
+    lineStatus: ''
+  })
+  const [showBulkSettingsModal, setShowBulkSettingsModal] = useState(false)
 
   useEffect(() => {
     fetchLines()
@@ -166,20 +172,41 @@ export default function LinesManagementPage() {
     })
   }
 
-  const handleBulkShipmentDateApply = () => {
-    if (!bulkShipmentDate || selectedLines.size === 0) {
-      alert('発送日と回線を選択してください')
+  const handleBulkSettingsApply = () => {
+    if (selectedLines.size === 0) {
+      alert('回線を選択してください')
+      return
+    }
+
+    // 空でないフィールドのみを適用
+    const fieldsToApply: Array<keyof typeof bulkSettings> = []
+    if (bulkSettings.simLocationId) fieldsToApply.push('simLocationId')
+    if (bulkSettings.spareTagId) fieldsToApply.push('spareTagId')
+    if (bulkSettings.shipmentDate) fieldsToApply.push('shipmentDate')
+    if (bulkSettings.returnDate) fieldsToApply.push('returnDate')
+    if (bulkSettings.lineStatus) fieldsToApply.push('lineStatus')
+
+    if (fieldsToApply.length === 0) {
+      alert('設定する項目を入力してください')
       return
     }
 
     selectedLines.forEach(lineId => {
-      handleLineChange(lineId, 'shipmentDate', bulkShipmentDate)
+      fieldsToApply.forEach(field => {
+        handleLineChange(lineId, field, bulkSettings[field])
+      })
     })
 
-    setShowBulkDateModal(false)
-    setBulkShipmentDate('')
+    setShowBulkSettingsModal(false)
+    setBulkSettings({
+      simLocationId: '',
+      spareTagId: '',
+      shipmentDate: '',
+      returnDate: '',
+      lineStatus: ''
+    })
     setSelectedLines(new Set())
-    alert(`${selectedLines.size}件の回線に発送日を設定しました`)
+    alert(`${selectedLines.size}件の回線に${fieldsToApply.length}項目を設定しました`)
   }
 
   const getApplicantName = (line: Line) => {
@@ -226,10 +253,10 @@ export default function LinesManagementPage() {
                 <div className="flex gap-2">
                   {selectedLines.size > 0 && (
                     <button
-                      onClick={() => setShowBulkDateModal(true)}
+                      onClick={() => setShowBulkSettingsModal(true)}
                       className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm font-medium"
                     >
-                      選択した回線の発送日を一括設定
+                      選択した回線を一括設定
                     </button>
                   )}
                   {hasPendingChanges && (
@@ -256,7 +283,7 @@ export default function LinesManagementPage() {
 
             <div className="overflow-x-auto">
               <table className="min-w-full border-collapse border border-gray-300">
-                <thead className="bg-gray-50">
+                <thead className="bg-gray-50 sticky top-0 z-20">
                   <tr>
                     <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">
                       <input
@@ -314,7 +341,7 @@ export default function LinesManagementPage() {
                             type="text"
                             value={currentPhoneNumber || ''}
                             onChange={(e) => handleLineChange(line.id, 'phoneNumber', e.target.value)}
-                            className="w-full px-1 py-0.5 text-[10px] border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-500"
+                            className="w-full px-1 py-0.5 text-[10px] text-gray-900 border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-500"
                             placeholder="電話番号"
                           />
                         </td>
@@ -322,7 +349,7 @@ export default function LinesManagementPage() {
                           <select
                             value={currentSimLocationId || ''}
                             onChange={(e) => handleLineChange(line.id, 'simLocationId', e.target.value || null)}
-                            className="w-full px-1 py-0.5 text-[10px] border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-500 cursor-pointer"
+                            className="w-full px-1 py-0.5 text-[10px] text-gray-900 border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-500 cursor-pointer"
                           >
                             <option value="">選択してください</option>
                             {tags.filter(t => t.type === 'sim_location').map(tag => (
@@ -334,7 +361,7 @@ export default function LinesManagementPage() {
                           <select
                             value={currentSpareTagId || ''}
                             onChange={(e) => handleLineChange(line.id, 'spareTagId', e.target.value || null)}
-                            className="w-full px-1 py-0.5 text-[10px] border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-500 cursor-pointer"
+                            className="w-full px-1 py-0.5 text-[10px] text-gray-900 border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-500 cursor-pointer"
                           >
                             <option value="">選択してください</option>
                             {tags.filter(t => t.type === 'spare').map(tag => (
@@ -347,7 +374,7 @@ export default function LinesManagementPage() {
                             type="date"
                             value={currentShipmentDate || ''}
                             onChange={(e) => handleLineChange(line.id, 'shipmentDate', e.target.value || null)}
-                            className="w-full px-1 py-0.5 text-[10px] border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-500"
+                            className="w-full px-1 py-0.5 text-[10px] text-gray-900 border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-500"
                           />
                         </td>
                         <td className="px-1 py-0.5 border border-gray-300">
@@ -355,14 +382,14 @@ export default function LinesManagementPage() {
                             type="date"
                             value={currentReturnDate || ''}
                             onChange={(e) => handleLineChange(line.id, 'returnDate', e.target.value || null)}
-                            className="w-full px-1 py-0.5 text-[10px] border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-500"
+                            className="w-full px-1 py-0.5 text-[10px] text-gray-900 border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-500"
                           />
                         </td>
                         <td className="px-1 py-0.5 border border-gray-300">
                           <select
                             value={currentLineStatus}
                             onChange={(e) => handleLineChange(line.id, 'lineStatus', e.target.value)}
-                            className="w-full px-1 py-0.5 text-[10px] border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-500 cursor-pointer"
+                            className="w-full px-1 py-0.5 text-[10px] text-gray-900 border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-500 cursor-pointer"
                           >
                             <option value="not_opened">未開通</option>
                             <option value="opened">開通済み</option>
@@ -383,34 +410,103 @@ export default function LinesManagementPage() {
       </div>
 
       {/* 一括発送日設定モーダル */}
-      {showBulkDateModal && (
+      {showBulkSettingsModal && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-          onClick={() => setShowBulkDateModal(false)}
+          onClick={() => setShowBulkSettingsModal(false)}
         >
           <div
-            className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6"
+            className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">一括発送日設定</h3>
-            <p className="text-sm text-gray-600 mb-4">
-              選択した{selectedLines.size}件の回線に発送日を設定します
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">一括設定</h3>
+            <p className="text-sm text-gray-600 mb-6">
+              選択した{selectedLines.size}件の回線に設定を適用します（空欄の項目は変更されません）
             </p>
-            <input
-              type="date"
-              value={bulkShipmentDate}
-              onChange={(e) => setBulkShipmentDate(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  SIMの場所
+                </label>
+                <select
+                  value={bulkSettings.simLocationId}
+                  onChange={(e) => setBulkSettings({...bulkSettings, simLocationId: e.target.value})}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">変更しない</option>
+                  {tags.filter(t => t.type === 'sim_location').map(tag => (
+                    <option key={tag.id} value={tag.id}>{tag.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  予備タグ
+                </label>
+                <select
+                  value={bulkSettings.spareTagId}
+                  onChange={(e) => setBulkSettings({...bulkSettings, spareTagId: e.target.value})}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">変更しない</option>
+                  {tags.filter(t => t.type === 'spare_tag').map(tag => (
+                    <option key={tag.id} value={tag.id}>{tag.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  発送日
+                </label>
+                <input
+                  type="date"
+                  value={bulkSettings.shipmentDate}
+                  onChange={(e) => setBulkSettings({...bulkSettings, shipmentDate: e.target.value})}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  返却日
+                </label>
+                <input
+                  type="date"
+                  value={bulkSettings.returnDate}
+                  onChange={(e) => setBulkSettings({...bulkSettings, returnDate: e.target.value})}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  ステータス
+                </label>
+                <select
+                  value={bulkSettings.lineStatus}
+                  onChange={(e) => setBulkSettings({...bulkSettings, lineStatus: e.target.value})}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">変更しない</option>
+                  <option value="active">利用中</option>
+                  <option value="inactive">停止中</option>
+                  <option value="cancelled">解約済み</option>
+                </select>
+              </div>
+            </div>
+
             <div className="mt-6 flex justify-end gap-3">
               <button
-                onClick={() => setShowBulkDateModal(false)}
+                onClick={() => setShowBulkSettingsModal(false)}
                 className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
               >
                 キャンセル
               </button>
               <button
-                onClick={handleBulkShipmentDateApply}
+                onClick={handleBulkSettingsApply}
                 className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
               >
                 適用
