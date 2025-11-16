@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { createClient } from '@supabase/supabase-js'
 import { getAdminSession } from '@/lib/auth'
+
+// Supabaseクライアントを初期化
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 interface BatchUpdate {
   id: string
@@ -28,10 +34,22 @@ export async function POST(request: NextRequest) {
       updates.map(async (update) => {
         const { id, ...data } = update
 
-        return await prisma.application.update({
-          where: { id },
-          data,
-        })
+        const { data: application, error } = await supabase
+          .from('Application')
+          .update({
+            ...data,
+            updatedAt: new Date().toISOString(),
+          })
+          .eq('id', id)
+          .select()
+          .single()
+
+        if (error) {
+          console.error(`申し込み ${id} の更新エラー:`, error)
+          throw error
+        }
+
+        return application
       })
     )
 
