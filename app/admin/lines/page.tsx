@@ -432,7 +432,7 @@ export default function LinesManagementPage() {
                 <select
                   value={bulkSettings.simLocationId}
                   onChange={(e) => setBulkSettings({...bulkSettings, simLocationId: e.target.value})}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                 >
                   <option value="">変更しない</option>
                   {tags.filter(t => t.type === 'sim_location').map(tag => (
@@ -448,7 +448,7 @@ export default function LinesManagementPage() {
                 <select
                   value={bulkSettings.spareTagId}
                   onChange={(e) => setBulkSettings({...bulkSettings, spareTagId: e.target.value})}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                 >
                   <option value="">変更しない</option>
                   {tags.filter(t => t.type === 'spare_tag').map(tag => (
@@ -465,7 +465,7 @@ export default function LinesManagementPage() {
                   type="date"
                   value={bulkSettings.shipmentDate}
                   onChange={(e) => setBulkSettings({...bulkSettings, shipmentDate: e.target.value})}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                 />
               </div>
 
@@ -477,7 +477,7 @@ export default function LinesManagementPage() {
                   type="date"
                   value={bulkSettings.returnDate}
                   onChange={(e) => setBulkSettings({...bulkSettings, returnDate: e.target.value})}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                 />
               </div>
 
@@ -488,7 +488,7 @@ export default function LinesManagementPage() {
                 <select
                   value={bulkSettings.lineStatus}
                   onChange={(e) => setBulkSettings({...bulkSettings, lineStatus: e.target.value})}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                 >
                   <option value="">変更しない</option>
                   <option value="active">利用中</option>
