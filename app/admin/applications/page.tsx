@@ -298,7 +298,7 @@ export default function ApplicationsPage() {
             )}
             <div className="overflow-x-auto">
             <table className="min-w-full border-collapse border border-gray-300">
-              <thead>
+              <thead className="sticky top-0 z-20">
                 <tr className="bg-gray-100">
                   <th colSpan={11} className="px-1 py-0.5 text-center text-[10px] font-bold text-gray-800 border border-gray-300">個人情報/法人情報</th>
                   <th colSpan={4} className="px-1 py-0.5 text-center text-[10px] font-bold text-gray-800 border border-gray-300">回線数</th>
