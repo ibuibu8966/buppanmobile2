@@ -494,13 +494,13 @@ export default function ApplicationsPage() {
                       </td>
                       <td className="px-0.5 py-0.5 text-[10px] text-gray-900 border border-gray-300 cursor-pointer hover:bg-gray-100"
                         onClick={() => handleCellClick(app.comment1 || '-')}>
-                        <div className="min-w-[10ch] truncate" title={app.comment1 || '-'}>
+                        <div className="min-w-[10ch] max-w-[10ch] truncate" title={app.comment1 || '-'}>
                           {app.comment1 || '-'}
                         </div>
                       </td>
                       <td className="px-0.5 py-0.5 text-[10px] text-gray-900 border border-gray-300 cursor-pointer hover:bg-gray-100"
                         onClick={() => handleCellClick(app.comment2 || '-')}>
-                        <div className="min-w-[10ch] truncate" title={app.comment2 || '-'}>
+                        <div className="min-w-[10ch] max-w-[10ch] truncate" title={app.comment2 || '-'}>
                           {app.comment2 || '-'}
                         </div>
                       </td>
