@@ -303,7 +303,7 @@ export default function ApplicationsPage() {
                 <tr className="bg-gray-100">
                   <th colSpan={11} className="px-1 py-0.5 text-center text-[10px] font-bold text-gray-800 border border-gray-300">個人情報/法人情報</th>
                   <th colSpan={4} className="px-1 py-0.5 text-center text-[10px] font-bold text-gray-800 border border-gray-300">回線数</th>
-                  <th colSpan={3} className="px-1 py-0.5 text-center text-[10px] font-bold text-gray-800 border border-gray-300">アップロード画像</th>
+                  <th className="px-1 py-0.5 text-center text-[10px] font-bold text-gray-800 border border-gray-300">画像</th>
                   <th className="px-1 py-0.5 text-center text-[10px] font-bold text-gray-800 border border-gray-300">有効期限</th>
                   <th colSpan={2} className="px-1 py-0.5 text-center text-[10px] font-bold text-gray-800 border border-gray-300">ステータス</th>
                   <th colSpan={2} className="px-1 py-0.5 text-center text-[10px] font-bold text-gray-800 border border-gray-300">コメント</th>
@@ -325,9 +325,7 @@ export default function ApplicationsPage() {
                   <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">発送済</th>
                   <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">未発送</th>
                   <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">返却済</th>
-                  <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">身分証表</th>
-                  <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">身分証裏</th>
-                  <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">謄本</th>
+                  <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">画像</th>
                   <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">有効期限</th>
                   <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">本人確認</th>
                   <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">決済確認</th>
@@ -433,35 +431,29 @@ export default function ApplicationsPage() {
                         </div>
                       </td>
                       <td className="px-0.5 py-0.5 text-[10px] border border-gray-300">
-                        <div className="w-[4ch] truncate">
+                        <div className="w-[12ch] flex gap-0.5">
                           {app.idCardFrontUrl ? (
-                            <button onClick={() => openImageModal(app, 'front')} className="text-blue-600 hover:text-blue-900 cursor-pointer">
-                              表示
+                            <button onClick={() => openImageModal(app, 'front')} className="text-blue-600 hover:text-blue-900 cursor-pointer text-[9px]">
+                              表
                             </button>
                           ) : (
-                            <span className="text-gray-400">-</span>
+                            <span className="text-gray-400 text-[9px]">-</span>
                           )}
-                        </div>
-                      </td>
-                      <td className="px-0.5 py-0.5 text-[10px] border border-gray-300">
-                        <div className="w-[4ch] truncate">
+                          <span className="text-gray-400">/</span>
                           {app.idCardBackUrl ? (
-                            <button onClick={() => openImageModal(app, 'back')} className="text-blue-600 hover:text-blue-900 cursor-pointer">
-                              表示
+                            <button onClick={() => openImageModal(app, 'back')} className="text-blue-600 hover:text-blue-900 cursor-pointer text-[9px]">
+                              裏
                             </button>
                           ) : (
-                            <span className="text-gray-400">-</span>
+                            <span className="text-gray-400 text-[9px]">-</span>
                           )}
-                        </div>
-                      </td>
-                      <td className="px-0.5 py-0.5 text-[10px] border border-gray-300">
-                        <div className="w-[2ch] truncate">
+                          <span className="text-gray-400">/</span>
                           {app.registrationUrl ? (
-                            <button onClick={() => openImageModal(app, 'registration')} className="text-blue-600 hover:text-blue-900 cursor-pointer">
-                              表示
+                            <button onClick={() => openImageModal(app, 'registration')} className="text-blue-600 hover:text-blue-900 cursor-pointer text-[9px]">
+                              謄
                             </button>
                           ) : (
-                            <span className="text-gray-400">-</span>
+                            <span className="text-gray-400 text-[9px]">-</span>
                           )}
                         </div>
                       </td>
@@ -477,30 +469,28 @@ export default function ApplicationsPage() {
                         </div>
                       </td>
                       <td className="px-0.5 py-0.5 text-[10px] border border-gray-300">
-                        <div className="w-[5ch]">
-                          <select
-                            value={currentVerificationStatus}
-                            onChange={(e) => handleStatusChange(app.id, 'verificationStatus', e.target.value)}
-                            className={`w-full px-1 py-0.5 text-[10px] font-semibold rounded border-0 ${getVerificationBadge(currentVerificationStatus).color} cursor-pointer`}
-                          >
-                            <option value="unverified">未確認</option>
-                            <option value="verified">確認済み</option>
-                            <option value="issue">不備あり</option>
-                          </select>
-                        </div>
+                        <select
+                          value={currentVerificationStatus}
+                          onChange={(e) => handleStatusChange(app.id, 'verificationStatus', e.target.value)}
+                          className={`w-full px-1 py-0.5 text-[10px] font-semibold rounded border-0 ${getVerificationBadge(currentVerificationStatus).color} cursor-pointer`}
+                          style={{ minWidth: '60px' }}
+                        >
+                          <option value="unverified">未確認</option>
+                          <option value="verified">確認済み</option>
+                          <option value="issue">不備あり</option>
+                        </select>
                       </td>
                       <td className="px-0.5 py-0.5 text-[10px] border border-gray-300">
-                        <div className="w-[5ch]">
-                          <select
-                            value={currentPaymentStatus}
-                            onChange={(e) => handleStatusChange(app.id, 'paymentStatus', e.target.value)}
-                            className={`w-full px-1 py-0.5 text-[10px] font-semibold rounded border-0 ${getPaymentBadge(currentPaymentStatus).color} cursor-pointer`}
-                          >
-                            <option value="not_issued">未発行</option>
-                            <option value="issued">発行済み</option>
-                            <option value="paid">入金済み</option>
-                          </select>
-                        </div>
+                        <select
+                          value={currentPaymentStatus}
+                          onChange={(e) => handleStatusChange(app.id, 'paymentStatus', e.target.value)}
+                          className={`w-full px-1 py-0.5 text-[10px] font-semibold rounded border-0 ${getPaymentBadge(currentPaymentStatus).color} cursor-pointer`}
+                          style={{ minWidth: '60px' }}
+                        >
+                          <option value="not_issued">未発行</option>
+                          <option value="issued">発行済み</option>
+                          <option value="paid">入金済み</option>
+                        </select>
                       </td>
                       <td className="px-0.5 py-0.5 text-[10px] text-gray-900 border border-gray-300 cursor-pointer hover:bg-gray-100"
                         onClick={() => handleCellClick(app.comment1 || '-')}>
