@@ -120,6 +120,10 @@ export default function ApplicationsPage() {
 
       // ソートキーに応じて値を取得
       switch (sortConfig.key) {
+        case 'applicantType':
+          aValue = a.applicantType === 'individual' ? '個人' : '法人'
+          bValue = b.applicantType === 'individual' ? '個人' : '法人'
+          break
         case 'applicantName':
           aValue = a.applicantType === 'individual'
             ? `${a.lastName || ''} ${a.firstName || ''}`.trim()
@@ -127,6 +131,46 @@ export default function ApplicationsPage() {
           bValue = b.applicantType === 'individual'
             ? `${b.lastName || ''} ${b.firstName || ''}`.trim()
             : b.companyName || ''
+          break
+        case 'kana':
+          aValue = a.applicantType === 'individual'
+            ? `${a.lastNameKana || ''} ${a.firstNameKana || ''}`.trim()
+            : a.companyNameKana || ''
+          bValue = b.applicantType === 'individual'
+            ? `${b.lastNameKana || ''} ${b.firstNameKana || ''}`.trim()
+            : b.companyNameKana || ''
+          break
+        case 'representative':
+          aValue = `${a.representativeLastName || ''} ${a.representativeFirstName || ''}`.trim()
+          bValue = `${b.representativeLastName || ''} ${b.representativeFirstName || ''}`.trim()
+          break
+        case 'contact':
+          aValue = `${a.contactLastName || ''} ${a.contactFirstName || ''}`.trim()
+          bValue = `${b.contactLastName || ''} ${b.contactFirstName || ''}`.trim()
+          break
+        case 'companyPostalCode':
+          aValue = a.postalCode || ''
+          bValue = b.postalCode || ''
+          break
+        case 'companyAddress':
+          aValue = a.address || ''
+          bValue = b.address || ''
+          break
+        case 'representativePostalCode':
+          aValue = a.representativePostalCode || ''
+          bValue = b.representativePostalCode || ''
+          break
+        case 'representativeAddress':
+          aValue = a.representativeAddress || ''
+          bValue = b.representativeAddress || ''
+          break
+        case 'phone':
+          aValue = a.phone || ''
+          bValue = b.phone || ''
+          break
+        case 'email':
+          aValue = a.email || ''
+          bValue = b.email || ''
           break
         case 'companyName':
           aValue = a.companyName || ''
@@ -430,22 +474,72 @@ export default function ApplicationsPage() {
                   <th className="px-1 py-0.5 text-center text-[10px] font-bold text-gray-800 border border-gray-300">詳細</th>
                 </tr>
                 <tr className="bg-gray-50">
-                  <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">個人/法人</th>
+                  <th
+                    className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                    onClick={() => handleSort('applicantType')}
+                  >
+                    個人/法人 {sortConfig.key === 'applicantType' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                  </th>
                   <th
                     className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
                     onClick={() => handleSort('applicantName')}
                   >
                     名前/会社名 {sortConfig.key === 'applicantName' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                   </th>
-                  <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">カナ</th>
-                  <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">代表者名</th>
-                  <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">担当者名</th>
-                  <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">法人郵便番号</th>
-                  <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">法人住所</th>
-                  <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">代表者郵便番号</th>
-                  <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">代表者住所</th>
-                  <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">電話番号</th>
-                  <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">メール</th>
+                  <th
+                    className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                    onClick={() => handleSort('kana')}
+                  >
+                    カナ {sortConfig.key === 'kana' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th
+                    className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                    onClick={() => handleSort('representative')}
+                  >
+                    代表者名 {sortConfig.key === 'representative' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th
+                    className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                    onClick={() => handleSort('contact')}
+                  >
+                    担当者名 {sortConfig.key === 'contact' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th
+                    className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                    onClick={() => handleSort('companyPostalCode')}
+                  >
+                    法人郵便番号 {sortConfig.key === 'companyPostalCode' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th
+                    className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                    onClick={() => handleSort('companyAddress')}
+                  >
+                    法人住所 {sortConfig.key === 'companyAddress' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th
+                    className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                    onClick={() => handleSort('representativePostalCode')}
+                  >
+                    代表者郵便番号 {sortConfig.key === 'representativePostalCode' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th
+                    className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                    onClick={() => handleSort('representativeAddress')}
+                  >
+                    代表者住所 {sortConfig.key === 'representativeAddress' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th
+                    className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                    onClick={() => handleSort('phone')}
+                  >
+                    電話番号 {sortConfig.key === 'phone' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th
+                    className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                    onClick={() => handleSort('email')}
+                  >
+                    メール {sortConfig.key === 'email' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                  </th>
                   <th
                     className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
                     onClick={() => handleSort('lineCount')}
