@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
@@ -67,6 +67,10 @@ export default function ApplicationsPage() {
   const [imageModalOpen, setImageModalOpen] = useState(false)
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null)
   const [selectedImageType, setSelectedImageType] = useState<'front' | 'back' | 'registration'>('front')
+  const [sortConfig, setSortConfig] = useState<{
+    key: string | null
+    direction: 'asc' | 'desc'
+  }>({ key: null, direction: 'asc' })
 
   useEffect(() => {
     fetchApplications()
@@ -97,6 +101,122 @@ export default function ApplicationsPage() {
       setLoading(false)
     }
   }
+
+  // ソートハンドラー
+  const handleSort = (key: string) => {
+    setSortConfig(prev => ({
+      key,
+      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
+    }))
+  }
+
+  // ソート済みデータ
+  const sortedApplications = useMemo(() => {
+    if (!sortConfig.key) return applications
+
+    const sorted = [...applications].sort((a, b) => {
+      let aValue: any = null
+      let bValue: any = null
+
+      // ソートキーに応じて値を取得
+      switch (sortConfig.key) {
+        case 'applicantName':
+          aValue = a.applicantType === 'individual'
+            ? `${a.lastName || ''} ${a.firstName || ''}`.trim()
+            : a.companyName || ''
+          bValue = b.applicantType === 'individual'
+            ? `${b.lastName || ''} ${b.firstName || ''}`.trim()
+            : b.companyName || ''
+          break
+        case 'companyName':
+          aValue = a.companyName || ''
+          bValue = b.companyName || ''
+          break
+        case 'planType':
+          aValue = a.planType || ''
+          bValue = b.planType || ''
+          break
+        case 'lineCount':
+          aValue = a.lineCount || 0
+          bValue = b.lineCount || 0
+          break
+        case 'shippedCount':
+          aValue = a.lines?.filter(l => l.lineStatus === 'shipped').length || 0
+          bValue = b.lines?.filter(l => l.lineStatus === 'shipped').length || 0
+          break
+        case 'notShippedCount':
+          aValue = a.lines?.filter(l => l.lineStatus === 'not_opened' || l.lineStatus === 'opened').length || 0
+          bValue = b.lines?.filter(l => l.lineStatus === 'not_opened' || l.lineStatus === 'opened').length || 0
+          break
+        case 'returnedCount':
+          aValue = a.lines?.filter(l => l.lineStatus === 'returned').length || 0
+          bValue = b.lines?.filter(l => l.lineStatus === 'returned').length || 0
+          break
+        case 'totalAmount':
+          aValue = a.totalAmount || 0
+          bValue = b.totalAmount || 0
+          break
+        case 'verificationStatus':
+          const verifyOrder: Record<string, number> = { 'unverified': 1, 'verified': 2, 'issue': 3 }
+          aValue = verifyOrder[a.verificationStatus] || 999
+          bValue = verifyOrder[b.verificationStatus] || 999
+          break
+        case 'paymentStatus':
+          const paymentOrder: Record<string, number> = { 'not_issued': 1, 'issued': 2, 'paid': 3 }
+          aValue = paymentOrder[a.paymentStatus] || 999
+          bValue = paymentOrder[b.paymentStatus] || 999
+          break
+        case 'expirationDate':
+          aValue = a.expirationDate || ''
+          bValue = b.expirationDate || ''
+          break
+        case 'createdAt':
+          aValue = a.createdAt || ''
+          bValue = b.createdAt || ''
+          break
+        case 'submittedAt':
+          aValue = a.submittedAt || ''
+          bValue = b.submittedAt || ''
+          break
+        case 'comment1':
+          aValue = a.comment1 || ''
+          bValue = b.comment1 || ''
+          break
+        case 'comment2':
+          aValue = a.comment2 || ''
+          bValue = b.comment2 || ''
+          break
+        default:
+          return 0
+      }
+
+      // null/空文字/0は最後に
+      if (!aValue && bValue) return 1
+      if (aValue && !bValue) return -1
+      if (!aValue && !bValue) return 0
+
+      // 比較
+      if (sortConfig.key === 'lineCount' || sortConfig.key === 'shippedCount' || sortConfig.key === 'notShippedCount' || sortConfig.key === 'returnedCount' || sortConfig.key === 'totalAmount') {
+        // 数値比較
+        return sortConfig.direction === 'asc' ? aValue - bValue : bValue - aValue
+      } else if (sortConfig.key === 'verificationStatus' || sortConfig.key === 'paymentStatus') {
+        // ステータス順序比較
+        return sortConfig.direction === 'asc' ? aValue - bValue : bValue - aValue
+      } else if (sortConfig.key === 'expirationDate' || sortConfig.key === 'createdAt' || sortConfig.key === 'submittedAt') {
+        // 日付比較
+        return sortConfig.direction === 'asc'
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue)
+      } else {
+        // 文字列比較
+        return sortConfig.direction === 'asc'
+          ? aValue.toString().localeCompare(bValue.toString(), 'ja')
+          : bValue.toString().localeCompare(aValue.toString(), 'ja')
+      }
+    })
+
+    return sorted
+  }, [applications, sortConfig])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -311,7 +431,12 @@ export default function ApplicationsPage() {
                 </tr>
                 <tr className="bg-gray-50">
                   <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">個人/法人</th>
-                  <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">名前/会社名</th>
+                  <th
+                    className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                    onClick={() => handleSort('applicantName')}
+                  >
+                    名前/会社名 {sortConfig.key === 'applicantName' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                  </th>
                   <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">カナ</th>
                   <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">代表者名</th>
                   <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">担当者名</th>
@@ -321,21 +446,66 @@ export default function ApplicationsPage() {
                   <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">代表者住所</th>
                   <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">電話番号</th>
                   <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">メール</th>
-                  <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">申込回線数</th>
-                  <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">発送済</th>
-                  <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">未発送</th>
-                  <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">返却済</th>
+                  <th
+                    className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                    onClick={() => handleSort('lineCount')}
+                  >
+                    申込回線数 {sortConfig.key === 'lineCount' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th
+                    className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                    onClick={() => handleSort('shippedCount')}
+                  >
+                    発送済 {sortConfig.key === 'shippedCount' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th
+                    className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                    onClick={() => handleSort('notShippedCount')}
+                  >
+                    未発送 {sortConfig.key === 'notShippedCount' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th
+                    className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                    onClick={() => handleSort('returnedCount')}
+                  >
+                    返却済 {sortConfig.key === 'returnedCount' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                  </th>
                   <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">画像</th>
-                  <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">有効期限</th>
-                  <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">本人確認</th>
-                  <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">決済確認</th>
-                  <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">コメント1</th>
-                  <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">コメント2</th>
+                  <th
+                    className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                    onClick={() => handleSort('expirationDate')}
+                  >
+                    有効期限 {sortConfig.key === 'expirationDate' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th
+                    className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                    onClick={() => handleSort('verificationStatus')}
+                  >
+                    本人確認 {sortConfig.key === 'verificationStatus' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th
+                    className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                    onClick={() => handleSort('paymentStatus')}
+                  >
+                    決済確認 {sortConfig.key === 'paymentStatus' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th
+                    className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                    onClick={() => handleSort('comment1')}
+                  >
+                    コメント1 {sortConfig.key === 'comment1' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th
+                    className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                    onClick={() => handleSort('comment2')}
+                  >
+                    コメント2 {sortConfig.key === 'comment2' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                  </th>
                   <th className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300">詳細</th>
                 </tr>
               </thead>
               <tbody className="bg-white">
-                {applications.map((app) => {
+                {sortedApplications.map((app) => {
                   const verificationBadge = getVerificationBadge(app.verificationStatus)
                   const paymentBadge = getPaymentBadge(app.paymentStatus)
                   const expired = isExpired(app.expirationDate)
