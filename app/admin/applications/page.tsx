@@ -126,6 +126,7 @@ export default function ApplicationsPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ updates }),
+        credentials: 'include',
       })
 
       if (response.ok) {

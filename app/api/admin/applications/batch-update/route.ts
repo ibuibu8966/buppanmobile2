@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { cookies } from 'next/headers'
-import jwt from 'jsonwebtoken'
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
+import { getAdminSession } from '@/lib/auth'
 
 interface BatchUpdate {
   id: string
@@ -15,17 +12,9 @@ interface BatchUpdate {
 export async function POST(request: NextRequest) {
   try {
     // 認証チェック
-    const cookieStore = await cookies()
-    const token = cookieStore.get('admin-token')
-
-    if (!token) {
+    const session = await getAdminSession(request)
+    if (!session) {
       return NextResponse.json({ error: '認証が必要です' }, { status: 401 })
-    }
-
-    try {
-      jwt.verify(token.value, JWT_SECRET)
-    } catch (error) {
-      return NextResponse.json({ error: '認証が無効です' }, { status: 401 })
     }
 
     const { updates }: { updates: BatchUpdate[] } = await request.json()
