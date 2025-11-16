@@ -281,7 +281,7 @@ export default function LinesManagementPage() {
               </div>
             )}
 
-            <div className="overflow-auto max-h-[calc(100vh-250px)]">
+            <div className="overflow-x-auto">
               <table className="min-w-full border-collapse border border-gray-300">
                 <thead className="bg-gray-50 sticky top-0 z-20">
                   <tr>
