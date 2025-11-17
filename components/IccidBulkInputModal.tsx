@@ -23,6 +23,7 @@ export default function IccidBulkInputModal({
   const [currentInput, setCurrentInput] = useState('')
   const [assignments, setAssignments] = useState<{ lineId: string; iccid: string }[]>([])
   const [errorMessage, setErrorMessage] = useState('')
+  const [autoEnterMode, setAutoEnterMode] = useState(true) // true: エンターキー自動送信, false: 手動エンター
   const inputRef = useRef<HTMLInputElement>(null)
 
   // ICCID未入力の回線を取得
@@ -47,7 +48,26 @@ export default function IccidBulkInputModal({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault()
-      handleAssign()
+      if (autoEnterMode) {
+        // 自動エンターモード: エンターキーで自動割り当て
+        handleAssign()
+      } else {
+        // 手動エンターモード: エンターキーで手動割り当て
+        handleAssign()
+      }
+    }
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setCurrentInput(value)
+
+    // 自動エンターモードOFFの場合、ICCID長さ（通常19-20桁）に達したら自動割り当て
+    if (!autoEnterMode && value.length >= 19) {
+      // 少し遅延を入れて、バーコードリーダーの入力が完了するのを待つ
+      setTimeout(() => {
+        handleAssign()
+      }, 100)
     }
   }
 
@@ -115,6 +135,7 @@ export default function IccidBulkInputModal({
     setCurrentInput('')
     setAssignments([])
     setErrorMessage('')
+    setAutoEnterMode(true)
   }
 
   if (!isOpen) return null
@@ -123,6 +144,42 @@ export default function IccidBulkInputModal({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-2xl">
         <h2 className="text-xl font-bold mb-4">ICCID連続入力</h2>
+
+        {/* バーコードリーダーモード選択 */}
+        <div className="mb-4 p-4 bg-gray-50 rounded border border-gray-200">
+          <label className="block text-sm font-medium text-gray-700 mb-3">
+            バーコードリーダーのタイプ
+          </label>
+          <div className="flex gap-4">
+            <label className="flex items-center cursor-pointer">
+              <input
+                type="radio"
+                checked={autoEnterMode}
+                onChange={() => setAutoEnterMode(true)}
+                className="mr-2 w-4 h-4"
+              />
+              <span className="text-sm text-gray-700">
+                エンターキー自動送信あり
+              </span>
+            </label>
+            <label className="flex items-center cursor-pointer">
+              <input
+                type="radio"
+                checked={!autoEnterMode}
+                onChange={() => setAutoEnterMode(false)}
+                className="mr-2 w-4 h-4"
+              />
+              <span className="text-sm text-gray-700">
+                エンターキー自動送信なし
+              </span>
+            </label>
+          </div>
+          <p className="text-xs text-gray-500 mt-2">
+            {autoEnterMode
+              ? '読み取り後にエンターキーが自動的に送信されるタイプ'
+              : '読み取り後に文字列のみが入力されるタイプ（19桁で自動割り当て）'}
+          </p>
+        </div>
 
         <div className="mb-4 p-4 bg-blue-50 rounded">
           <p className="text-sm text-gray-700">
@@ -142,9 +199,9 @@ export default function IccidBulkInputModal({
             ref={inputRef}
             type="text"
             value={currentInput}
-            onChange={(e) => setCurrentInput(e.target.value)}
+            onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg font-mono"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg font-mono text-gray-900"
             placeholder="ICCIDを読み取ってください"
             disabled={remainingLines === 0}
           />
