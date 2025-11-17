@@ -59,6 +59,7 @@ export default function ApplyPage() {
   const [applicationId, setApplicationId] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [uploadingFile, setUploadingFile] = useState<string | null>(null)
+  const [copyRepToContact, setCopyRepToContact] = useState(false)
 
   const [formData, setFormData] = useState<FormData>({
     applicantType: 'individual',
@@ -99,6 +100,36 @@ export default function ApplyPage() {
   const updateFormData = (data: Partial<FormData>) => {
     setFormData(prev => ({ ...prev, ...data }))
   }
+
+  const handleCopyRepToContact = (checked: boolean) => {
+    setCopyRepToContact(checked)
+    if (checked) {
+      updateFormData({
+        contactLastName: formData.representativeLastName,
+        contactFirstName: formData.representativeFirstName,
+        contactLastNameKana: formData.representativeLastNameKana,
+        contactFirstNameKana: formData.representativeFirstNameKana,
+      })
+    }
+  }
+
+  // 代表者情報と担当者情報を同期
+  useEffect(() => {
+    if (copyRepToContact) {
+      updateFormData({
+        contactLastName: formData.representativeLastName,
+        contactFirstName: formData.representativeFirstName,
+        contactLastNameKana: formData.representativeLastNameKana,
+        contactFirstNameKana: formData.representativeFirstNameKana,
+      })
+    }
+  }, [
+    copyRepToContact,
+    formData.representativeLastName,
+    formData.representativeFirstName,
+    formData.representativeLastNameKana,
+    formData.representativeFirstNameKana,
+  ])
 
   const saveToDatabase = async (status: 'draft' | 'submitted' = 'draft') => {
     try {
@@ -604,7 +635,20 @@ export default function ApplyPage() {
                     </div>
 
                     <div className="border-t border-white/10 pt-6 mt-6">
-                      <h3 className="text-xl font-bold text-white mb-4">担当者情報</h3>
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-xl font-bold text-white">担当者情報</h3>
+                        <label className="flex items-center gap-2 cursor-pointer group">
+                          <input
+                            type="checkbox"
+                            checked={copyRepToContact}
+                            onChange={(e) => handleCopyRepToContact(e.target.checked)}
+                            className="w-4 h-4 rounded border-white/20 bg-white/10 text-[#d4af37] focus:ring-[#d4af37]"
+                          />
+                          <span className="text-sm text-white/80 group-hover:text-white transition-colors">
+                            代表者と同じ
+                          </span>
+                        </label>
+                      </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
