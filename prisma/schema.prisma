@@ -103,6 +103,7 @@ model Line {
 
   // 回線情報
   phoneNumber       String?
+  iccid             String?
   simLocationId     String?  // SIMの場所タグID
   spareTagId        String?  // 予備タグID
   returnDate        DateTime?

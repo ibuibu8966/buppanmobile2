@@ -13,6 +13,7 @@ interface Line {
   id: string
   applicationId: string
   phoneNumber?: string | null
+  iccid?: string | null
   simLocationId?: string | null
   spareTagId?: string | null
   shipmentDate?: string | null
@@ -31,6 +32,7 @@ interface Line {
 
 interface PendingChange {
   phoneNumber?: string | null
+  iccid?: string | null
   simLocationId?: string | null
   spareTagId?: string | null
   shipmentDate?: string | null
@@ -147,6 +149,10 @@ export default function LinesManagementPage() {
         case 'phoneNumber':
           aValue = a.phoneNumber || ''
           bValue = b.phoneNumber || ''
+          break
+        case 'iccid':
+          aValue = a.iccid || ''
+          bValue = b.iccid || ''
           break
         case 'simLocation':
           aValue = a.simLocation?.name || ''
@@ -415,6 +421,12 @@ export default function LinesManagementPage() {
                     </th>
                     <th
                       className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                      onClick={() => handleSort('iccid')}
+                    >
+                      ICCID {sortConfig.key === 'iccid' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                    </th>
+                    <th
+                      className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
                       onClick={() => handleSort('simLocation')}
                     >
                       SIMの場所 {sortConfig.key === 'simLocation' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
@@ -479,6 +491,15 @@ export default function LinesManagementPage() {
                             onChange={(e) => handleLineChange(line.id, 'phoneNumber', e.target.value)}
                             className="w-full px-1 py-0.5 text-[10px] text-gray-900 border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-500"
                             placeholder="電話番号"
+                          />
+                        </td>
+                        <td className="px-1 py-0.5 border border-gray-300">
+                          <input
+                            type="text"
+                            value={getCurrentValue(line.id, 'iccid', line.iccid) || ''}
+                            onChange={(e) => handleLineChange(line.id, 'iccid', e.target.value)}
+                            className="w-full px-1 py-0.5 text-[10px] text-gray-900 border-0 bg-transparent focus:bg-white focus:ring-1 focus:ring-blue-500"
+                            placeholder="ICCID"
                           />
                         </td>
                         <td className="px-1 py-0.5 border border-gray-300">

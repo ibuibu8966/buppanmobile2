@@ -114,6 +114,7 @@ export const tagSchema = z.object({
 // 回線情報のバリデーション
 export const lineSchema = z.object({
   phoneNumber: z.string().optional(),
+  iccid: z.string().optional(),
   simLocationId: z.string().optional(),
   spareTagId: z.string().optional(),
   returnDate: z.string().optional(),
