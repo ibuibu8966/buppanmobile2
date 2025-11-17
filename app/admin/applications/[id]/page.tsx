@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
+import IccidBulkInputModal from '@/components/IccidBulkInputModal'
 
 interface Tag {
   id: string
@@ -96,6 +97,7 @@ export default function ApplicationDetailPage() {
     direction: 'asc' | 'desc'
   }>({ key: null, direction: 'asc' })
   const [isSaving, setIsSaving] = useState(false)
+  const [showIccidBulkInputModal, setShowIccidBulkInputModal] = useState(false)
 
   useEffect(() => {
     fetchApplication()
@@ -300,6 +302,35 @@ export default function ApplicationDetailPage() {
   const handleCancelAll = () => {
     setPendingChanges({})
     setSelectedLines(new Set())
+  }
+
+  // ICCID一括入力を保存
+  const handleIccidBulkSave = async (assignments: { lineId: string; iccid: string }[]) => {
+    setIsSaving(true)
+    try {
+      const results = await Promise.all(
+        assignments.map(async (assignment) => {
+          const response = await fetch(`/api/admin/lines/${assignment.lineId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ iccid: assignment.iccid }),
+          })
+          return response.ok
+        })
+      )
+
+      if (results.every(r => r)) {
+        fetchApplication()
+        alert(`${assignments.length}件のICCIDを保存しました`)
+      } else {
+        alert('一部のICCIDの保存に失敗しました')
+      }
+    } catch (error) {
+      console.error('保存エラー:', error)
+      alert('保存に失敗しました')
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   // 一括設定を適用
@@ -736,8 +767,14 @@ export default function ApplicationDetailPage() {
 
         {/* 回線管理 */}
         <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="mb-4">
+          <div className="mb-4 flex justify-between items-center">
             <h2 className="text-xl font-bold text-gray-900">回線管理</h2>
+            <button
+              onClick={() => setShowIccidBulkInputModal(true)}
+              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm font-medium"
+            >
+              ICCID連続入力
+            </button>
           </div>
 
           {/* 保存/キャンセルバー */}
@@ -1084,6 +1121,14 @@ export default function ApplicationDetailPage() {
             </div>
           </div>
         )}
+
+        {/* ICCID連続入力モーダル */}
+        <IccidBulkInputModal
+          isOpen={showIccidBulkInputModal}
+          onClose={() => setShowIccidBulkInputModal(false)}
+          lines={application?.lines || []}
+          onSave={handleIccidBulkSave}
+        />
       </div>
     </div>
   )
