@@ -62,6 +62,7 @@ model Application {
   totalAmount       Int      // 合計金額
 
   // 書類アップロード
+  isSecondApplication Boolean? @default(false) // 2回目の申し込み（書類アップロード不要）
   idCardFrontUrl    String?  // 身分証表
   idCardBackUrl     String?  // 身分証裏
   registrationUrl   String?  // 登記簿謄本（法人のみ）
