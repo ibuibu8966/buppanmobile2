@@ -46,8 +46,12 @@ interface Application {
   companyNameKana?: string | null
   representativeLastName?: string | null
   representativeFirstName?: string | null
+  representativeLastNameKana?: string | null
+  representativeFirstNameKana?: string | null
   contactLastName?: string | null
   contactFirstName?: string | null
+  contactLastNameKana?: string | null
+  contactFirstNameKana?: string | null
   email: string
   phone: string
   postalCode: string
@@ -564,9 +568,21 @@ export default function ApplicationDetailPage() {
                   </p>
                 </div>
                 <div>
+                  <label className="block text-sm font-medium text-gray-700">代表者名カナ</label>
+                  <p className="mt-1 text-gray-900">
+                    {application.representativeLastNameKana} {application.representativeFirstNameKana}
+                  </p>
+                </div>
+                <div>
                   <label className="block text-sm font-medium text-gray-700">担当者名</label>
                   <p className="mt-1 text-gray-900">
                     {application.contactLastName} {application.contactFirstName}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">担当者名カナ</label>
+                  <p className="mt-1 text-gray-900">
+                    {application.contactLastNameKana} {application.contactFirstNameKana}
                   </p>
                 </div>
               </>
