@@ -921,6 +921,7 @@ export default function ApplyPage() {
                   </p>
                 </div>
 
+                {!formData.isSecondApplication && (
                 <div className="space-y-6">
                   {/* 身分証明書（表） */}
                   <div>
@@ -1075,6 +1076,7 @@ export default function ApplyPage() {
                     </div>
                   )}
                 </div>
+                )}
 
                 <div className="mt-8 flex gap-4">
                   <button
