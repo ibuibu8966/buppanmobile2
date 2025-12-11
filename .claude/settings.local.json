@@ -20,7 +20,8 @@
       "Bash(xargs kill:*)",
       "Bash(npm run create-admin:*)",
       "Bash(npm run build:*)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(source .env)"
     ],
     "deny": [],
     "ask": []

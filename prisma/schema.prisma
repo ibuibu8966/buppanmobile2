@@ -108,6 +108,7 @@ model Line {
   spareTagId        String?  // 予備タグID
   returnDate        DateTime?
   shipmentDate      DateTime?
+  contractMonths    Int?     // 契約月数
   lineStatus        String   @default("not_opened") // 'not_opened' | 'opened' | 'shipped' | 'waiting_return' | 'returned' | 'canceled'
 
   // タイムスタンプ

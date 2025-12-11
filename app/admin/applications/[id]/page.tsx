@@ -20,6 +20,7 @@ interface Line {
   spareTagId?: string | null
   returnDate?: string | null
   shipmentDate?: string | null
+  contractMonths?: number | null
   lineStatus: string
   simLocation?: Tag | null
   spareTag?: Tag | null
@@ -32,6 +33,7 @@ interface PendingChange {
   spareTagId?: string | null
   shipmentDate?: string | null
   returnDate?: string | null
+  contractMonths?: number | null
   lineStatus?: string
 }
 
@@ -93,6 +95,7 @@ export default function ApplicationDetailPage() {
     spareTagId: '',
     shipmentDate: '',
     returnDate: '',
+    contractMonths: '',
     lineStatus: ''
   })
   const [showBulkSettingsModal, setShowBulkSettingsModal] = useState(false)
@@ -230,6 +233,10 @@ export default function ApplicationDetailPage() {
           aValue = a.returnDate || ''
           bValue = b.returnDate || ''
           break
+        case 'contractMonths':
+          aValue = a.contractMonths ?? 0
+          bValue = b.contractMonths ?? 0
+          break
         case 'lineStatus':
           const statusOrder: Record<string, number> = {
             'not_opened': 1,
@@ -250,7 +257,7 @@ export default function ApplicationDetailPage() {
       if (aValue && !bValue) return -1
       if (!aValue && !bValue) return 0
 
-      if (sortConfig.key === 'lineStatus') {
+      if (sortConfig.key === 'lineStatus' || sortConfig.key === 'contractMonths') {
         return sortConfig.direction === 'asc' ? aValue - bValue : bValue - aValue
       } else if (sortConfig.key === 'shipmentDate' || sortConfig.key === 'returnDate') {
         return sortConfig.direction === 'asc'
@@ -344,6 +351,7 @@ export default function ApplicationDetailPage() {
     if (bulkSettings.spareTagId) fieldsToApply.push('spareTagId')
     if (bulkSettings.shipmentDate) fieldsToApply.push('shipmentDate')
     if (bulkSettings.returnDate) fieldsToApply.push('returnDate')
+    if (bulkSettings.contractMonths) fieldsToApply.push('contractMonths')
     if (bulkSettings.lineStatus) fieldsToApply.push('lineStatus')
 
     if (fieldsToApply.length === 0) {
@@ -353,7 +361,11 @@ export default function ApplicationDetailPage() {
 
     selectedLines.forEach(lineId => {
       fieldsToApply.forEach(field => {
-        handleLineChange(lineId, field as keyof PendingChange, bulkSettings[field])
+        let value: any = bulkSettings[field]
+        if (field === 'contractMonths' && value) {
+          value = parseInt(value, 10)
+        }
+        handleLineChange(lineId, field as keyof PendingChange, value)
       })
     })
 
@@ -363,6 +375,7 @@ export default function ApplicationDetailPage() {
       spareTagId: '',
       shipmentDate: '',
       returnDate: '',
+      contractMonths: '',
       lineStatus: ''
     })
   }
@@ -895,6 +908,12 @@ export default function ApplicationDetailPage() {
                   </th>
                   <th
                     className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
+                    onClick={() => handleSort('contractMonths')}
+                  >
+                    契約月 {sortConfig.key === 'contractMonths' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th
+                    className="px-1 py-0.5 text-left text-[10px] font-semibold text-gray-700 border border-gray-300 cursor-pointer hover:bg-gray-200 select-none"
                     onClick={() => handleSort('lineStatus')}
                   >
                     ステータス {sortConfig.key === 'lineStatus' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
@@ -910,6 +929,7 @@ export default function ApplicationDetailPage() {
                   const currentSpareTagId = getCurrentValue(line.id, 'spareTagId', line.spareTagId)
                   const currentShipmentDate = getCurrentValue(line.id, 'shipmentDate', line.shipmentDate)
                   const currentReturnDate = getCurrentValue(line.id, 'returnDate', line.returnDate)
+                  const currentContractMonths = getCurrentValue(line.id, 'contractMonths', line.contractMonths)
                   const currentLineStatus = getCurrentValue(line.id, 'lineStatus', line.lineStatus)
 
                   return (
@@ -998,6 +1018,19 @@ export default function ApplicationDetailPage() {
                           onChange={(e) => handleLineChange(line.id, 'returnDate', e.target.value ? new Date(e.target.value).toISOString() : null)}
                           className="w-full px-2 py-1 border border-gray-300 rounded text-gray-900"
                         />
+                      </td>
+                      <td className="px-3 py-2 text-sm border border-gray-300">
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="number"
+                            min="1"
+                            value={currentContractMonths ?? ''}
+                            onChange={(e) => handleLineChange(line.id, 'contractMonths', e.target.value ? parseInt(e.target.value, 10) : null)}
+                            className="w-16 px-2 py-1 border border-gray-300 rounded text-gray-900"
+                            placeholder=""
+                          />
+                          <span className="text-gray-700 text-xs">ヶ月</span>
+                        </div>
                       </td>
                       <td className="px-3 py-2 text-sm border border-gray-300">
                         <select
@@ -1093,6 +1126,23 @@ export default function ApplicationDetailPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
+                    契約月
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min="1"
+                      value={bulkSettings.contractMonths}
+                      onChange={(e) => setBulkSettings({ ...bulkSettings, contractMonths: e.target.value })}
+                      className="w-24 px-3 py-2 border border-gray-300 rounded text-gray-900"
+                      placeholder=""
+                    />
+                    <span className="text-gray-700">ヶ月</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
                     ステータス
                   </label>
                   <select
@@ -1120,6 +1170,7 @@ export default function ApplicationDetailPage() {
                       spareTagId: '',
                       shipmentDate: '',
                       returnDate: '',
+                      contractMonths: '',
                       lineStatus: ''
                     })
                   }}
