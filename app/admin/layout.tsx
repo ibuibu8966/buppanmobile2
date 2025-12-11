@@ -54,6 +54,12 @@ export default async function AdminLayout({ children }: { children: ReactNode })
                   申し込み一覧
                 </Link>
                 <Link
+                  href="/admin/applications/archived"
+                  className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+                >
+                  アーカイブ
+                </Link>
+                <Link
                   href="/admin/lines"
                   className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
                 >

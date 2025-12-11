@@ -70,6 +70,7 @@ interface Application {
   expirationDate?: string | null
   comment1?: string | null
   comment2?: string | null
+  isArchived?: boolean
   createdAt: string
   submittedAt?: string | null
   lines: Line[]
@@ -444,6 +445,37 @@ export default function ApplicationDetailPage() {
     }
   }
 
+  const handleArchiveToggle = async () => {
+    const newArchiveState = !application?.isArchived
+    const confirmMessage = newArchiveState
+      ? 'この申し込みをアーカイブしますか？\nアーカイブすると一覧から非表示になり、関連する回線も回線一覧から非表示になります。'
+      : 'この申し込みを復元しますか？\n復元すると一覧に再表示されます。'
+
+    if (!confirm(confirmMessage)) return
+
+    try {
+      const response = await fetch(`/api/admin/applications/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isArchived: newArchiveState }),
+      })
+
+      if (response.ok) {
+        alert(newArchiveState ? 'アーカイブしました' : '復元しました')
+        if (newArchiveState) {
+          router.push('/admin/applications')
+        } else {
+          fetchApplication()
+        }
+      } else {
+        alert('処理に失敗しました')
+      }
+    } catch (error) {
+      console.error('アーカイブ処理エラー:', error)
+      alert('処理に失敗しました')
+    }
+  }
+
   const handleLineUpdate = async (lineId: string, field: string, value: string | null) => {
     try {
       const response = await fetch(`/api/admin/lines/${lineId}`, {
@@ -530,13 +562,30 @@ export default function ApplicationDetailPage() {
         <div className="mb-6 flex items-center justify-between">
           <div>
             <Link
-              href="/admin/applications"
+              href={application.isArchived ? "/admin/applications/archived" : "/admin/applications"}
               className="text-blue-600 hover:text-blue-800 mb-2 inline-block"
             >
-              ← 一覧に戻る
+              ← {application.isArchived ? 'アーカイブ一覧に戻る' : '一覧に戻る'}
             </Link>
-            <h1 className="text-2xl font-bold text-gray-900">申し込み詳細</h1>
+            <h1 className="text-2xl font-bold text-gray-900">
+              申し込み詳細
+              {application.isArchived && (
+                <span className="ml-3 text-sm font-medium px-2 py-1 bg-gray-200 text-gray-700 rounded">
+                  アーカイブ済み
+                </span>
+              )}
+            </h1>
           </div>
+          <button
+            onClick={handleArchiveToggle}
+            className={`px-4 py-2 rounded text-sm font-medium ${
+              application.isArchived
+                ? 'bg-green-600 hover:bg-green-700 text-white'
+                : 'bg-gray-600 hover:bg-gray-700 text-white'
+            }`}
+          >
+            {application.isArchived ? '復元する' : 'アーカイブする'}
+          </button>
         </div>
 
         {/* 申し込み情報 */}

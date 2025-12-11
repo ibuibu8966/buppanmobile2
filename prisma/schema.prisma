@@ -78,6 +78,7 @@ model Application {
   verificationStatus String  @default("unverified") // 'unverified' | 'verified' | 'issue'
   paymentStatus      String  @default("not_issued") // 'not_issued' | 'issued' | 'paid'
   status             String  @default("draft")      // 'draft' | 'submitted' | 'processing' | 'completed'
+  isArchived         Boolean @default(false)        // アーカイブ済みフラグ
 
   // コメント
   comment1          String?  @db.Text

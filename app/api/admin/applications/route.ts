@@ -25,6 +25,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20')
     const status = searchParams.get('status') || 'all'
     const search = searchParams.get('search') || ''
+    const archived = searchParams.get('archived') === 'true'
 
     const from = (page - 1) * limit
     const to = from + limit - 1
@@ -35,6 +36,9 @@ export async function GET(request: NextRequest) {
       .select('*, Line(*)', { count: 'exact' })
       .order('createdAt', { ascending: false })
       .range(from, to)
+
+    // アーカイブフィルター（デフォルトは非アーカイブのみ）
+    query = query.eq('isArchived', archived)
 
     // ステータスフィルター
     if (status !== 'all') {
