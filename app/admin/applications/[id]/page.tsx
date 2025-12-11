@@ -175,7 +175,7 @@ export default function ApplicationDetailPage() {
   }
 
   // 回線の変更を追跡（即時保存しない）
-  const handleLineChange = (lineId: string, field: keyof PendingChange, value: string | null) => {
+  const handleLineChange = (lineId: string, field: keyof PendingChange, value: string | number | null) => {
     setPendingChanges(prev => ({
       ...prev,
       [lineId]: {
