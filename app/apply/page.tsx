@@ -41,6 +41,7 @@ type FormData = {
   lineCount?: number
 
   // ステップ3
+  isSecondApplication?: boolean
   idCardFrontUrl?: string
   idCardBackUrl?: string
   registrationUrl?: string
@@ -260,6 +261,9 @@ export default function ApplyPage() {
 
   // ステップ3の入力チェック
   const isStep3Valid = () => {
+    // 2回目の申し込みの場合は書類アップロード不要
+    if (formData.isSecondApplication) return true
+
     if (!formData.idCardFrontUrl || !formData.idCardBackUrl) return false
     if (!formData.expirationDate) return false
     if (formData.applicantType === 'corporate' && !formData.registrationUrl) return false
@@ -899,6 +903,24 @@ export default function ApplyPage() {
               <div>
                 <h2 className="text-2xl font-bold text-white mb-6">書類アップロード</h2>
 
+                {/* 2回目の申し込みチェックボックス */}
+                <div className="mb-6 p-4 bg-white/5 border border-white/20 rounded-xl">
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={formData.isSecondApplication || false}
+                      onChange={(e) => updateFormData({ isSecondApplication: e.target.checked })}
+                      className="w-5 h-5 rounded border-white/20 bg-white/10 text-[#d4af37] focus:ring-[#d4af37]"
+                    />
+                    <span className="text-white/80 group-hover:text-white">
+                      2回目の申し込み（書類アップロード不要）
+                    </span>
+                  </label>
+                  <p className="text-sm text-white/60 mt-2 ml-8">
+                    ※ 以前お申し込みいただいた方は、書類のアップロードをスキップできます
+                  </p>
+                </div>
+
                 <div className="space-y-6">
                   {/* 身分証明書（表） */}
                   <div>
@@ -1172,19 +1194,28 @@ export default function ApplyPage() {
                   <div className="bg-white/5 rounded-xl p-6">
                     <h3 className="text-lg font-bold text-[#d4af37] mb-4">アップロード書類</h3>
                     <div className="space-y-2 text-white/80">
-                      <div className="flex justify-between py-2 border-b border-white/10">
-                        <span className="text-white/60">身分証明書（表）</span>
-                        <span className="text-[#d4af37]">✓ アップロード済み</span>
-                      </div>
-                      <div className="flex justify-between py-2 border-b border-white/10">
-                        <span className="text-white/60">身分証明書（裏）</span>
-                        <span className="text-[#d4af37]">✓ アップロード済み</span>
-                      </div>
-                      {formData.applicantType === 'corporate' && formData.registrationUrl && (
+                      {formData.isSecondApplication ? (
                         <div className="flex justify-between py-2">
-                          <span className="text-white/60">登記簿謄本</span>
-                          <span className="text-[#d4af37]">✓ アップロード済み</span>
+                          <span className="text-white/60">2回目の申し込み</span>
+                          <span className="text-[#d4af37]">✓ 書類アップロード不要</span>
                         </div>
+                      ) : (
+                        <>
+                          <div className="flex justify-between py-2 border-b border-white/10">
+                            <span className="text-white/60">身分証明書（表）</span>
+                            <span className="text-[#d4af37]">✓ アップロード済み</span>
+                          </div>
+                          <div className="flex justify-between py-2 border-b border-white/10">
+                            <span className="text-white/60">身分証明書（裏）</span>
+                            <span className="text-[#d4af37]">✓ アップロード済み</span>
+                          </div>
+                          {formData.applicantType === 'corporate' && formData.registrationUrl && (
+                            <div className="flex justify-between py-2">
+                              <span className="text-white/60">登記簿謄本</span>
+                              <span className="text-[#d4af37]">✓ アップロード済み</span>
+                            </div>
+                          )}
+                        </>
                       )}
                     </div>
                     <button
