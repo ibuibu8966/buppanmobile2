@@ -316,15 +316,19 @@ export default function ApplicationDetailPage() {
   }
 
   // ICCID一括入力を保存
-  const handleIccidBulkSave = async (assignments: { lineId: string; iccid: string }[]) => {
+  const handleIccidBulkSave = async (assignments: { lineId: string; iccid: string; contractMonth?: string }[]) => {
     setIsSaving(true)
     try {
       const results = await Promise.all(
         assignments.map(async (assignment) => {
+          const updateData: { iccid: string; contractMonth?: string } = { iccid: assignment.iccid }
+          if (assignment.contractMonth) {
+            updateData.contractMonth = assignment.contractMonth
+          }
           const response = await fetch(`/api/admin/lines/${assignment.lineId}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ iccid: assignment.iccid }),
+            body: JSON.stringify(updateData),
           })
           return response.ok
         })

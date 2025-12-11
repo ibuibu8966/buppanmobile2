@@ -11,7 +11,7 @@ interface IccidBulkInputModalProps {
   isOpen: boolean
   onClose: () => void
   lines: Line[]
-  onSave: (assignments: { lineId: string; iccid: string }[]) => void
+  onSave: (assignments: { lineId: string; iccid: string; contractMonth?: string }[]) => void
 }
 
 export default function IccidBulkInputModal({
@@ -21,7 +21,8 @@ export default function IccidBulkInputModal({
   onSave,
 }: IccidBulkInputModalProps) {
   const [currentInput, setCurrentInput] = useState('')
-  const [assignments, setAssignments] = useState<{ lineId: string; iccid: string }[]>([])
+  const [contractMonth, setContractMonth] = useState('')
+  const [assignments, setAssignments] = useState<{ lineId: string; iccid: string; contractMonth?: string }[]>([])
   const [errorMessage, setErrorMessage] = useState('')
   const [autoEnterMode, setAutoEnterMode] = useState(true) // true: エンターキー自動送信, false: 手動エンター
   const inputRef = useRef<HTMLInputElement>(null)
@@ -102,7 +103,11 @@ export default function IccidBulkInputModal({
     // 次の空欄行に割り当て
     const nextEmptyLine = emptyLines[assignments.length]
     if (nextEmptyLine) {
-      setAssignments([...assignments, { lineId: nextEmptyLine.id, iccid }])
+      setAssignments([...assignments, {
+        lineId: nextEmptyLine.id,
+        iccid,
+        contractMonth: contractMonth || undefined
+      }])
       setCurrentInput('')
       setErrorMessage('')
 
@@ -133,6 +138,7 @@ export default function IccidBulkInputModal({
 
   const handleReset = () => {
     setCurrentInput('')
+    setContractMonth('')
     setAssignments([])
     setErrorMessage('')
     setAutoEnterMode(true)
@@ -190,7 +196,23 @@ export default function IccidBulkInputModal({
           </p>
         </div>
 
-        {/* 入力欄 */}
+        {/* 契約月入力欄 */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            契約月（全回線に適用）
+          </label>
+          <input
+            type="month"
+            value={contractMonth}
+            onChange={(e) => setContractMonth(e.target.value)}
+            className="w-48 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
+          />
+          <p className="mt-1 text-xs text-gray-500">
+            空欄の場合は契約月は設定されません
+          </p>
+        </div>
+
+        {/* ICCID入力欄 */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             ICCID入力
