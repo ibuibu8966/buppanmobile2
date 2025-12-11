@@ -81,6 +81,7 @@ export default function ApplicationsPage() {
       setLoading(true)
       const params = new URLSearchParams({
         page: page.toString(),
+        limit: '100',
         status,
         search,
       })
