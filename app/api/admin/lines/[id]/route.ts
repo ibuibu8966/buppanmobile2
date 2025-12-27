@@ -42,11 +42,7 @@ export async function PATCH(
         updatedAt: new Date().toISOString(),
       })
       .eq('id', id)
-      .select(`
-        *,
-        simLocation:Tag!Line_simLocationId_fkey(*),
-        spareTag:Tag!Line_spareTagId_fkey(*)
-      `)
+      .select('*')
       .single()
 
     if (error) {
