@@ -8,6 +8,21 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+// 画像URLを署名付きURLに変換するヘルパー関数
+const getSignedImageUrl = async (publicUrl: string | null): Promise<string | null> => {
+  if (!publicUrl) return null
+
+  const match = publicUrl.match(/\/applications\/(.+)$/)
+  if (!match) return publicUrl
+
+  const filePath = match[1]
+  const { data } = await supabase.storage
+    .from('applications')
+    .createSignedUrl(filePath, 3600) // 1時間有効
+
+  return data?.signedUrl || publicUrl
+}
+
 // GET: 申し込み一覧を取得（管理者用）
 export async function GET(request: NextRequest) {
   try {
@@ -69,8 +84,18 @@ export async function GET(request: NextRequest) {
       lines: app.Line || [],
     }))
 
+    // 画像URLを署名付きURLに変換
+    const applicationsWithSignedUrls = await Promise.all(
+      (formattedApplications || []).map(async (app: any) => ({
+        ...app,
+        idCardFrontUrl: await getSignedImageUrl(app.idCardFrontUrl),
+        idCardBackUrl: await getSignedImageUrl(app.idCardBackUrl),
+        registrationUrl: await getSignedImageUrl(app.registrationUrl),
+      }))
+    )
+
     return NextResponse.json({
-      applications: formattedApplications || [],
+      applications: applicationsWithSignedUrls,
       pagination: {
         page,
         limit,
