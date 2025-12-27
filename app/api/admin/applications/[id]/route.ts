@@ -8,6 +8,24 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+// 画像URLを署名付きURLに変換するヘルパー関数
+const getSignedImageUrl = async (publicUrl: string | null): Promise<string | null> => {
+  if (!publicUrl) return null
+
+  // publicURLからファイルパスを抽出
+  // 例: https://xxx.supabase.co/storage/v1/object/public/applications/documents/123-file.jpg
+  //  → documents/123-file.jpg
+  const match = publicUrl.match(/\/applications\/(.+)$/)
+  if (!match) return publicUrl
+
+  const filePath = match[1]
+  const { data } = await supabase.storage
+    .from('applications')
+    .createSignedUrl(filePath, 3600) // 1時間有効
+
+  return data?.signedUrl || publicUrl
+}
+
 // GET: 申し込み詳細を取得
 export async function GET(
   request: NextRequest,
@@ -55,9 +73,19 @@ export async function GET(
       console.error('回線情報の取得エラー:', linesError)
     }
 
+    // 画像URLを署名付きURLに変換
+    const [idCardFrontUrl, idCardBackUrl, registrationUrl] = await Promise.all([
+      getSignedImageUrl(application.idCardFrontUrl),
+      getSignedImageUrl(application.idCardBackUrl),
+      getSignedImageUrl(application.registrationUrl),
+    ])
+
     // データを結合
     const result = {
       ...application,
+      idCardFrontUrl,
+      idCardBackUrl,
+      registrationUrl,
       lines: lines || [],
     }
 
