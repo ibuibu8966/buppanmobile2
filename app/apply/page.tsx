@@ -185,25 +185,53 @@ export default function ApplyPage() {
   }
 
   const handleFileUpload = async (file: File, fieldName: string) => {
+    // ファイルサイズチェック（30MB）
+    const MAX_FILE_SIZE = 30 * 1024 * 1024
+    if (file.size > MAX_FILE_SIZE) {
+      alert('ファイルサイズは30MB以下にしてください。')
+      return
+    }
+
+    // ファイルタイプチェック
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf']
+    if (!allowedTypes.includes(file.type)) {
+      alert('対応しているファイル形式: JPEG, PNG, PDF')
+      return
+    }
+
     try {
       setUploadingFile(fieldName)
-      const formDataObj = new FormData()
-      formDataObj.append('file', file)
-      formDataObj.append('folder', 'documents')
 
-      const response = await fetch('/api/upload', {
+      // ステップ1: 署名付きURLを取得
+      const signatureResponse = await fetch('/api/upload-signature', {
         method: 'POST',
-        body: formDataObj,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fileName: file.name,
+          fileType: file.type,
+          folder: 'documents'
+        })
       })
 
-      const result = await response.json()
-
-      if (!response.ok) {
-        console.error('アップロードAPIエラー:', result)
-        throw new Error(result.error || 'アップロードに失敗しました')
+      if (!signatureResponse.ok) {
+        const result = await signatureResponse.json()
+        throw new Error(result.error || '署名付きURLの取得に失敗しました')
       }
 
-      updateFormData({ [fieldName]: result.url })
+      const { signedUrl, publicUrl } = await signatureResponse.json()
+
+      // ステップ2: Supabaseに直接アップロード
+      const uploadResponse = await fetch(signedUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': file.type },
+        body: file,
+      })
+
+      if (!uploadResponse.ok) {
+        throw new Error('ファイルのアップロードに失敗しました')
+      }
+
+      updateFormData({ [fieldName]: publicUrl })
     } catch (error) {
       console.error('ファイルアップロードエラー:', error)
       alert(error instanceof Error ? error.message : 'ファイルのアップロードに失敗しました')
@@ -958,7 +986,7 @@ export default function ApplyPage() {
                           >
                             {uploadingFile === 'idCardFrontUrl' ? 'アップロード中...' : 'ファイルを選択'}
                           </label>
-                          <div className="text-sm text-white/60 mt-2">JPEG, PNG, PDF（最大10MB）</div>
+                          <div className="text-sm text-white/60 mt-2">JPEG, PNG, PDF（最大30MB）</div>
                         </div>
                       )}
                     </div>
@@ -1013,7 +1041,7 @@ export default function ApplyPage() {
                           >
                             {uploadingFile === 'idCardBackUrl' ? 'アップロード中...' : 'ファイルを選択'}
                           </label>
-                          <div className="text-sm text-white/60 mt-2">JPEG, PNG, PDF（最大10MB）</div>
+                          <div className="text-sm text-white/60 mt-2">JPEG, PNG, PDF（最大30MB）</div>
                         </div>
                       )}
                     </div>
@@ -1069,7 +1097,7 @@ export default function ApplyPage() {
                             >
                               {uploadingFile === 'registrationUrl' ? 'アップロード中...' : 'ファイルを選択'}
                             </label>
-                            <div className="text-sm text-white/60 mt-2">PDF（最大10MB）</div>
+                            <div className="text-sm text-white/60 mt-2">PDF（最大30MB）</div>
                           </div>
                         )}
                       </div>
