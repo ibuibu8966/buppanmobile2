@@ -185,6 +185,8 @@ export async function POST(request: NextRequest) {
       status: 'submitted',
       verificationStatus: 'unverified',
       paymentStatus: 'not_issued',
+      createdAt: now,
+      updatedAt: now,
       submittedAt: now,
 
       // Contractor紐付け（あれば）
