@@ -24,7 +24,9 @@
       "Bash(source .env)",
       "Bash(npx tsc:*)",
       "Bash(source:*)",
-      "Bash(DATABASE_URL=\"postgresql://placeholder\" npx prisma:*)"
+      "Bash(DATABASE_URL=\"postgresql://placeholder\" npx prisma:*)",
+      "Bash(curl:*)",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []

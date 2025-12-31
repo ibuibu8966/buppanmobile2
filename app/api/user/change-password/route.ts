@@ -163,8 +163,9 @@ export async function POST(request: NextRequest) {
     return response
   } catch (error) {
     console.error('パスワード変更エラー:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
-      { error: 'パスワードの変更に失敗しました' },
+      { error: 'パスワードの変更に失敗しました', details: errorMessage },
       { status: 500 }
     )
   }
