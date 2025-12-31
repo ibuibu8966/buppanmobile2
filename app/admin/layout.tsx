@@ -71,6 +71,12 @@ export default async function AdminLayout({ children }: { children: ReactNode })
                 >
                   タグ管理
                 </Link>
+                <Link
+                  href="/admin/contractors"
+                  className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+                >
+                  契約者管理
+                </Link>
               </nav>
             </div>
             <div className="flex items-center space-x-4">

@@ -15,6 +15,52 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+// 契約者（複数申込の統合用）
+model Contractor {
+  id                String   @id @default(uuid())
+
+  // 認証情報
+  email             String   @unique
+  password          String?  // ハッシュ化されたパスワード
+  mustChangePassword Boolean @default(true)
+  passwordChangedAt DateTime?
+
+  // 契約者タイプ
+  contractorType    String   // 'individual' | 'corporate'
+
+  // 個人情報
+  lastName          String?
+  firstName         String?
+  lastNameKana      String?
+  firstNameKana     String?
+
+  // 法人情報
+  companyName       String?
+  companyNameKana   String?
+  corporateNumber   String?
+
+  // 共通情報
+  phone             String?
+  postalCode        String?
+  address           String?
+
+  // 書類情報（統合時に最新の有効な書類を参照）
+  idCardFrontUrl    String?
+  idCardBackUrl     String?
+  registrationUrl   String?
+  expirationDate    DateTime?
+
+  // タイムスタンプ
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  lastLoginAt       DateTime?
+
+  // リレーション
+  applications      Application[]
+
+  @@index([email])
+}
+
 // 申し込み情報
 model Application {
   id                String   @id @default(uuid())
@@ -85,6 +131,14 @@ model Application {
   comment1          String?  @db.Text
   comment2          String?  @db.Text
 
+  // ユーザー認証用（マイページログイン）
+  password          String?  // ハッシュ化されたパスワード
+  mustChangePassword Boolean @default(false)
+
+  // 契約者との紐付け（統合済みの場合）
+  contractorId      String?
+  contractor        Contractor? @relation(fields: [contractorId], references: [id])
+
   // タイムスタンプ
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
@@ -96,6 +150,7 @@ model Application {
   @@index([email])
   @@index([status])
   @@index([createdAt])
+  @@index([contractorId])
 }
 
 // 回線情報

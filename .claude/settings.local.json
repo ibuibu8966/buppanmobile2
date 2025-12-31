@@ -21,7 +21,10 @@
       "Bash(npm run create-admin:*)",
       "Bash(npm run build:*)",
       "Bash(sed:*)",
-      "Bash(source .env)"
+      "Bash(source .env)",
+      "Bash(npx tsc:*)",
+      "Bash(source:*)",
+      "Bash(DATABASE_URL=\"postgresql://placeholder\" npx prisma:*)"
     ],
     "deny": [],
     "ask": []
