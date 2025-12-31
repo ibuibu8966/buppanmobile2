@@ -133,6 +133,8 @@ export async function POST(request: NextRequest) {
     const now = new Date().toISOString()
 
     const newApplication = {
+      // IDを明示的に生成
+      id: crypto.randomUUID(),
       // 契約者情報を引き継ぎ
       applicantType: baseApplication.applicantType,
       lastName: baseApplication.lastName,
