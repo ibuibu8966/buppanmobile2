@@ -83,7 +83,7 @@ export default function AdditionalOrderPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.error || '発注に失敗しました')
+        setError(data.details ? `${data.error}: ${data.details}` : data.error || '発注に失敗しました')
         return
       }
 

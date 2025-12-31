@@ -202,7 +202,7 @@ export async function POST(request: NextRequest) {
     if (createError) {
       console.error('申込作成エラー:', createError)
       return NextResponse.json(
-        { error: '申込の作成に失敗しました' },
+        { error: '申込の作成に失敗しました', details: createError.message },
         { status: 500 }
       )
     }
@@ -231,8 +231,9 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('追加発注エラー:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
-      { error: '追加発注に失敗しました' },
+      { error: '追加発注に失敗しました', details: errorMessage },
       { status: 500 }
     )
   }
