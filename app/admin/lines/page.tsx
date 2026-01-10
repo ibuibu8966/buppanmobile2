@@ -502,7 +502,7 @@ export default function LinesManagementPage() {
                   value={filterConfig.applicantName}
                   onChange={(e) => updateFilter('applicantName', e.target.value)}
                   placeholder="部分一致"
-                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-2 py-1.5 text-sm text-gray-900 bg-white border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               <div>
@@ -512,7 +512,7 @@ export default function LinesManagementPage() {
                   value={filterConfig.companyName}
                   onChange={(e) => updateFilter('companyName', e.target.value)}
                   placeholder="部分一致"
-                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-2 py-1.5 text-sm text-gray-900 bg-white border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               <div>
@@ -522,7 +522,7 @@ export default function LinesManagementPage() {
                   value={filterConfig.phoneNumber}
                   onChange={(e) => updateFilter('phoneNumber', e.target.value)}
                   placeholder="部分一致"
-                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-2 py-1.5 text-sm text-gray-900 bg-white border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               <div>
@@ -532,7 +532,7 @@ export default function LinesManagementPage() {
                   value={filterConfig.iccid}
                   onChange={(e) => updateFilter('iccid', e.target.value)}
                   placeholder="部分一致"
-                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-2 py-1.5 text-sm text-gray-900 bg-white border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
             </div>
@@ -543,7 +543,7 @@ export default function LinesManagementPage() {
                 <label className="block text-xs font-medium text-gray-600 mb-1">SIMの場所</label>
                 <div className="border border-gray-300 rounded bg-white p-2 max-h-32 overflow-y-auto">
                   {tags.filter(t => t.type === 'sim_location').map(tag => (
-                    <label key={tag.id} className="flex items-center gap-2 text-sm py-0.5 cursor-pointer hover:bg-gray-50">
+                    <label key={tag.id} className="flex items-center gap-2 text-sm text-gray-900 py-0.5 cursor-pointer hover:bg-gray-50">
                       <input
                         type="checkbox"
                         checked={filterConfig.simLocationIds.includes(tag.id)}
@@ -565,7 +565,7 @@ export default function LinesManagementPage() {
                 <label className="block text-xs font-medium text-gray-600 mb-1">予備タグ</label>
                 <div className="border border-gray-300 rounded bg-white p-2 max-h-32 overflow-y-auto">
                   {tags.filter(t => t.type === 'spare').map(tag => (
-                    <label key={tag.id} className="flex items-center gap-2 text-sm py-0.5 cursor-pointer hover:bg-gray-50">
+                    <label key={tag.id} className="flex items-center gap-2 text-sm text-gray-900 py-0.5 cursor-pointer hover:bg-gray-50">
                       <input
                         type="checkbox"
                         checked={filterConfig.spareTagIds.includes(tag.id)}
@@ -587,7 +587,7 @@ export default function LinesManagementPage() {
                 <label className="block text-xs font-medium text-gray-600 mb-1">ステータス</label>
                 <div className="border border-gray-300 rounded bg-white p-2 max-h-32 overflow-y-auto">
                   {LINE_STATUS_OPTIONS.map(option => (
-                    <label key={option.value} className="flex items-center gap-2 text-sm py-0.5 cursor-pointer hover:bg-gray-50">
+                    <label key={option.value} className="flex items-center gap-2 text-sm text-gray-900 py-0.5 cursor-pointer hover:bg-gray-50">
                       <input
                         type="checkbox"
                         checked={filterConfig.lineStatuses.includes(option.value)}
@@ -616,14 +616,14 @@ export default function LinesManagementPage() {
                     type="date"
                     value={filterConfig.shipmentDateFrom}
                     onChange={(e) => updateFilter('shipmentDateFrom', e.target.value)}
-                    className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                    className="flex-1 px-2 py-1.5 text-sm text-gray-900 bg-white border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                   />
                   <span className="text-gray-500">〜</span>
                   <input
                     type="date"
                     value={filterConfig.shipmentDateTo}
                     onChange={(e) => updateFilter('shipmentDateTo', e.target.value)}
-                    className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                    className="flex-1 px-2 py-1.5 text-sm text-gray-900 bg-white border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
               </div>
@@ -634,14 +634,14 @@ export default function LinesManagementPage() {
                     type="date"
                     value={filterConfig.returnDateFrom}
                     onChange={(e) => updateFilter('returnDateFrom', e.target.value)}
-                    className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                    className="flex-1 px-2 py-1.5 text-sm text-gray-900 bg-white border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                   />
                   <span className="text-gray-500">〜</span>
                   <input
                     type="date"
                     value={filterConfig.returnDateTo}
                     onChange={(e) => updateFilter('returnDateTo', e.target.value)}
-                    className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                    className="flex-1 px-2 py-1.5 text-sm text-gray-900 bg-white border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                   />
                 </div>
               </div>
