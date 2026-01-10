@@ -9,6 +9,43 @@ interface Tag {
   type: string
 }
 
+interface FilterConfig {
+  applicantName: string
+  companyName: string
+  phoneNumber: string
+  iccid: string
+  simLocationIds: string[]
+  spareTagIds: string[]
+  lineStatuses: string[]
+  shipmentDateFrom: string
+  shipmentDateTo: string
+  returnDateFrom: string
+  returnDateTo: string
+}
+
+const initialFilterConfig: FilterConfig = {
+  applicantName: '',
+  companyName: '',
+  phoneNumber: '',
+  iccid: '',
+  simLocationIds: [],
+  spareTagIds: [],
+  lineStatuses: [],
+  shipmentDateFrom: '',
+  shipmentDateTo: '',
+  returnDateFrom: '',
+  returnDateTo: '',
+}
+
+const LINE_STATUS_OPTIONS = [
+  { value: 'not_opened', label: '未開通' },
+  { value: 'opened', label: '開通済み' },
+  { value: 'shipped', label: '発送済み' },
+  { value: 'waiting_return', label: '返却待ち' },
+  { value: 'returned', label: '返却済み' },
+  { value: 'canceled', label: '解約' },
+]
+
 interface Line {
   id: string
   applicationId: string
@@ -60,6 +97,8 @@ export default function LinesManagementPage() {
     key: string | null
     direction: 'asc' | 'desc'
   }>({ key: null, direction: 'asc' })
+  const [filterConfig, setFilterConfig] = useState<FilterConfig>(initialFilterConfig)
+  const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false)
 
   useEffect(() => {
     fetchLines()
@@ -124,11 +163,114 @@ export default function LinesManagementPage() {
     }))
   }
 
-  // ソート済みデータ
-  const sortedLines = useMemo(() => {
-    if (!sortConfig.key) return lines
+  const getApplicantName = (line: Line) => {
+    if (line.application.applicantType === 'individual') {
+      return `${line.application.lastName || ''} ${line.application.firstName || ''}`
+    }
+    return line.application.companyName || '-'
+  }
 
-    const sorted = [...lines].sort((a, b) => {
+  // フィルター適用済みかどうか
+  const hasActiveFilters = useMemo(() => {
+    return (
+      filterConfig.applicantName !== '' ||
+      filterConfig.companyName !== '' ||
+      filterConfig.phoneNumber !== '' ||
+      filterConfig.iccid !== '' ||
+      filterConfig.simLocationIds.length > 0 ||
+      filterConfig.spareTagIds.length > 0 ||
+      filterConfig.lineStatuses.length > 0 ||
+      filterConfig.shipmentDateFrom !== '' ||
+      filterConfig.shipmentDateTo !== '' ||
+      filterConfig.returnDateFrom !== '' ||
+      filterConfig.returnDateTo !== ''
+    )
+  }, [filterConfig])
+
+  // フィルタークリア
+  const handleClearFilters = () => {
+    setFilterConfig(initialFilterConfig)
+  }
+
+  // フィルター更新
+  const updateFilter = <K extends keyof FilterConfig>(key: K, value: FilterConfig[K]) => {
+    setFilterConfig(prev => ({ ...prev, [key]: value }))
+  }
+
+  // フィルター＆ソート済みデータ
+  const filteredAndSortedLines = useMemo(() => {
+    // Step 1: フィルタリング
+    let filtered = lines.filter(line => {
+      // テキストフィルター（部分一致、大文字小文字無視）
+      if (filterConfig.applicantName) {
+        const name = getApplicantName(line).toLowerCase()
+        if (!name.includes(filterConfig.applicantName.toLowerCase())) {
+          return false
+        }
+      }
+
+      if (filterConfig.companyName) {
+        const company = (line.application.companyName || '').toLowerCase()
+        if (!company.includes(filterConfig.companyName.toLowerCase())) {
+          return false
+        }
+      }
+
+      if (filterConfig.phoneNumber) {
+        const phone = (line.phoneNumber || '').toLowerCase()
+        if (!phone.includes(filterConfig.phoneNumber.toLowerCase())) {
+          return false
+        }
+      }
+
+      if (filterConfig.iccid) {
+        const iccid = (line.iccid || '').toLowerCase()
+        if (!iccid.includes(filterConfig.iccid.toLowerCase())) {
+          return false
+        }
+      }
+
+      // セレクトフィルター（複数選択、空配列は全選択）
+      if (filterConfig.simLocationIds.length > 0) {
+        if (!line.simLocationId || !filterConfig.simLocationIds.includes(line.simLocationId)) {
+          return false
+        }
+      }
+
+      if (filterConfig.spareTagIds.length > 0) {
+        if (!line.spareTagId || !filterConfig.spareTagIds.includes(line.spareTagId)) {
+          return false
+        }
+      }
+
+      if (filterConfig.lineStatuses.length > 0) {
+        if (!filterConfig.lineStatuses.includes(line.lineStatus)) {
+          return false
+        }
+      }
+
+      // 日付フィルター（範囲指定）- 未設定の回線は表示しない
+      if (filterConfig.shipmentDateFrom || filterConfig.shipmentDateTo) {
+        const date = line.shipmentDate
+        if (!date) return false
+        if (filterConfig.shipmentDateFrom && date < filterConfig.shipmentDateFrom) return false
+        if (filterConfig.shipmentDateTo && date > filterConfig.shipmentDateTo) return false
+      }
+
+      if (filterConfig.returnDateFrom || filterConfig.returnDateTo) {
+        const date = line.returnDate
+        if (!date) return false
+        if (filterConfig.returnDateFrom && date < filterConfig.returnDateFrom) return false
+        if (filterConfig.returnDateTo && date > filterConfig.returnDateTo) return false
+      }
+
+      return true
+    })
+
+    // Step 2: ソート
+    if (!sortConfig.key) return filtered
+
+    const sorted = [...filtered].sort((a, b) => {
       let aValue: any = null
       let bValue: any = null
 
@@ -210,7 +352,7 @@ export default function LinesManagementPage() {
     })
 
     return sorted
-  }, [lines, sortConfig])
+  }, [lines, filterConfig, sortConfig])
 
   const handleLineChange = (lineId: string, field: keyof PendingChange, value: string | null) => {
     setPendingChanges(prev => ({
@@ -311,13 +453,6 @@ export default function LinesManagementPage() {
     alert(`${selectedLines.size}件の回線に${fieldsToApply.length}項目を設定しました`)
   }
 
-  const getApplicantName = (line: Line) => {
-    if (line.application.applicantType === 'individual') {
-      return `${line.application.lastName || ''} ${line.application.firstName || ''}`
-    }
-    return line.application.companyName || '-'
-  }
-
   const getCurrentValue = (lineId: string, field: keyof PendingChange, originalValue: any) => {
     return pendingChanges[lineId]?.[field] !== undefined ? pendingChanges[lineId][field] : originalValue
   }
@@ -327,7 +462,192 @@ export default function LinesManagementPage() {
   return (
     <div className="flex flex-col h-full">
       <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <h1 className="text-2xl font-bold text-gray-900">総合回線管理</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-gray-900">総合回線管理</h1>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-gray-600">
+              表示: {filteredAndSortedLines.length}/{lines.length}件
+            </span>
+            <button
+              onClick={() => setIsFilterPanelOpen(!isFilterPanelOpen)}
+              className={`px-3 py-1.5 text-sm font-medium rounded border ${
+                hasActiveFilters
+                  ? 'bg-blue-100 border-blue-300 text-blue-700'
+                  : 'bg-gray-100 border-gray-300 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              フィルター {isFilterPanelOpen ? '▲' : '▼'}
+              {hasActiveFilters && <span className="ml-1 text-blue-600">●</span>}
+            </button>
+            {hasActiveFilters && (
+              <button
+                onClick={handleClearFilters}
+                className="px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-800"
+              >
+                クリア
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* フィルターパネル */}
+        {isFilterPanelOpen && (
+          <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            {/* テキストフィルター */}
+            <div className="grid grid-cols-4 gap-3 mb-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">申込者名</label>
+                <input
+                  type="text"
+                  value={filterConfig.applicantName}
+                  onChange={(e) => updateFilter('applicantName', e.target.value)}
+                  placeholder="部分一致"
+                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">会社名</label>
+                <input
+                  type="text"
+                  value={filterConfig.companyName}
+                  onChange={(e) => updateFilter('companyName', e.target.value)}
+                  placeholder="部分一致"
+                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">電話番号</label>
+                <input
+                  type="text"
+                  value={filterConfig.phoneNumber}
+                  onChange={(e) => updateFilter('phoneNumber', e.target.value)}
+                  placeholder="部分一致"
+                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">ICCID</label>
+                <input
+                  type="text"
+                  value={filterConfig.iccid}
+                  onChange={(e) => updateFilter('iccid', e.target.value)}
+                  placeholder="部分一致"
+                  className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            </div>
+
+            {/* セレクトフィルター */}
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">SIMの場所</label>
+                <div className="border border-gray-300 rounded bg-white p-2 max-h-32 overflow-y-auto">
+                  {tags.filter(t => t.type === 'sim_location').map(tag => (
+                    <label key={tag.id} className="flex items-center gap-2 text-sm py-0.5 cursor-pointer hover:bg-gray-50">
+                      <input
+                        type="checkbox"
+                        checked={filterConfig.simLocationIds.includes(tag.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            updateFilter('simLocationIds', [...filterConfig.simLocationIds, tag.id])
+                          } else {
+                            updateFilter('simLocationIds', filterConfig.simLocationIds.filter(id => id !== tag.id))
+                          }
+                        }}
+                        className="rounded"
+                      />
+                      {tag.name}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">予備タグ</label>
+                <div className="border border-gray-300 rounded bg-white p-2 max-h-32 overflow-y-auto">
+                  {tags.filter(t => t.type === 'spare').map(tag => (
+                    <label key={tag.id} className="flex items-center gap-2 text-sm py-0.5 cursor-pointer hover:bg-gray-50">
+                      <input
+                        type="checkbox"
+                        checked={filterConfig.spareTagIds.includes(tag.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            updateFilter('spareTagIds', [...filterConfig.spareTagIds, tag.id])
+                          } else {
+                            updateFilter('spareTagIds', filterConfig.spareTagIds.filter(id => id !== tag.id))
+                          }
+                        }}
+                        className="rounded"
+                      />
+                      {tag.name}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">ステータス</label>
+                <div className="border border-gray-300 rounded bg-white p-2 max-h-32 overflow-y-auto">
+                  {LINE_STATUS_OPTIONS.map(option => (
+                    <label key={option.value} className="flex items-center gap-2 text-sm py-0.5 cursor-pointer hover:bg-gray-50">
+                      <input
+                        type="checkbox"
+                        checked={filterConfig.lineStatuses.includes(option.value)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            updateFilter('lineStatuses', [...filterConfig.lineStatuses, option.value])
+                          } else {
+                            updateFilter('lineStatuses', filterConfig.lineStatuses.filter(v => v !== option.value))
+                          }
+                        }}
+                        className="rounded"
+                      />
+                      {option.label}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* 日付フィルター */}
+            <div className="grid grid-cols-2 gap-6">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">発送日</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="date"
+                    value={filterConfig.shipmentDateFrom}
+                    onChange={(e) => updateFilter('shipmentDateFrom', e.target.value)}
+                    className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  <span className="text-gray-500">〜</span>
+                  <input
+                    type="date"
+                    value={filterConfig.shipmentDateTo}
+                    onChange={(e) => updateFilter('shipmentDateTo', e.target.value)}
+                    className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">返却日</label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="date"
+                    value={filterConfig.returnDateFrom}
+                    onChange={(e) => updateFilter('returnDateFrom', e.target.value)}
+                    className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  <span className="text-gray-500">〜</span>
+                  <input
+                    type="date"
+                    value={filterConfig.returnDateTo}
+                    onChange={(e) => updateFilter('returnDateTo', e.target.value)}
+                    className="flex-1 px-2 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex-1 overflow-auto bg-white">
@@ -458,7 +778,7 @@ export default function LinesManagementPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white">
-                  {sortedLines.map((line) => {
+                  {filteredAndSortedLines.map((line) => {
                     const hasChanges = !!pendingChanges[line.id]
                     const isSelected = selectedLines.has(line.id)
                     const currentPhoneNumber = getCurrentValue(line.id, 'phoneNumber', line.phoneNumber)
