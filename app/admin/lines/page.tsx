@@ -230,16 +230,24 @@ export default function LinesManagementPage() {
         }
       }
 
-      // セレクトフィルター（複数選択、空配列は全選択）
+      // セレクトフィルター（複数選択、空配列は全選択、__empty__は未設定を表す）
       if (filterConfig.simLocationIds.length > 0) {
-        if (!line.simLocationId || !filterConfig.simLocationIds.includes(line.simLocationId)) {
-          return false
+        const hasEmpty = filterConfig.simLocationIds.includes('__empty__')
+        const otherIds = filterConfig.simLocationIds.filter(id => id !== '__empty__')
+        if (!line.simLocationId) {
+          if (!hasEmpty) return false
+        } else {
+          if (!otherIds.includes(line.simLocationId)) return false
         }
       }
 
       if (filterConfig.spareTagIds.length > 0) {
-        if (!line.spareTagId || !filterConfig.spareTagIds.includes(line.spareTagId)) {
-          return false
+        const hasEmpty = filterConfig.spareTagIds.includes('__empty__')
+        const otherIds = filterConfig.spareTagIds.filter(id => id !== '__empty__')
+        if (!line.spareTagId) {
+          if (!hasEmpty) return false
+        } else {
+          if (!otherIds.includes(line.spareTagId)) return false
         }
       }
 
@@ -542,6 +550,21 @@ export default function LinesManagementPage() {
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">SIMの場所</label>
                 <div className="border border-gray-300 rounded bg-white p-2 max-h-32 overflow-y-auto">
+                  <label className="flex items-center gap-2 text-sm text-gray-500 py-0.5 cursor-pointer hover:bg-gray-50">
+                    <input
+                      type="checkbox"
+                      checked={filterConfig.simLocationIds.includes('__empty__')}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          updateFilter('simLocationIds', [...filterConfig.simLocationIds, '__empty__'])
+                        } else {
+                          updateFilter('simLocationIds', filterConfig.simLocationIds.filter(id => id !== '__empty__'))
+                        }
+                      }}
+                      className="rounded"
+                    />
+                    （空）
+                  </label>
                   {tags.filter(t => t.type === 'sim_location').map(tag => (
                     <label key={tag.id} className="flex items-center gap-2 text-sm text-gray-900 py-0.5 cursor-pointer hover:bg-gray-50">
                       <input
@@ -564,6 +587,21 @@ export default function LinesManagementPage() {
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">予備タグ</label>
                 <div className="border border-gray-300 rounded bg-white p-2 max-h-32 overflow-y-auto">
+                  <label className="flex items-center gap-2 text-sm text-gray-500 py-0.5 cursor-pointer hover:bg-gray-50">
+                    <input
+                      type="checkbox"
+                      checked={filterConfig.spareTagIds.includes('__empty__')}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          updateFilter('spareTagIds', [...filterConfig.spareTagIds, '__empty__'])
+                        } else {
+                          updateFilter('spareTagIds', filterConfig.spareTagIds.filter(id => id !== '__empty__'))
+                        }
+                      }}
+                      className="rounded"
+                    />
+                    （空）
+                  </label>
                   {tags.filter(t => t.type === 'spare').map(tag => (
                     <label key={tag.id} className="flex items-center gap-2 text-sm text-gray-900 py-0.5 cursor-pointer hover:bg-gray-50">
                       <input
